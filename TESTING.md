@@ -11,7 +11,7 @@ Prerequisites:
   - `BETTER_AUTH_SECRET`
   - `SITE_URL` (`http://localhost:3000` locally)
   - `RESEND_API_KEY` + `RESEND_FROM` + `RESEND_TEST_MODE=true` in dev
-  - `ANTHROPIC_API_KEY` (default model: `claude-haiku-4-5`)
+  - `OPENROUTER_API_KEY` (default model: `z-ai/glm-5.3-flash`)
 - `.env.local` filled in (`VITE_CONVEX_URL`, `CONVEX_DEPLOYMENT`)
 - 2 browsers (or 1 browser + 1 incognito window) ready for multi-tenant tests
 
@@ -24,7 +24,7 @@ Prerequisites:
 | B2 | Lint          | `pnpm lint`              | Exit 0, 0 warnings            |
 | B3 | Build         | `pnpm build`             | Bundle written to `.output/`  |
 | B4 | Smoke E2E     | `pnpm test:smoke`        | All scenarios pass            |
-| B5 | Prod cookies  | `pnpm test:cookies`      | `albo.session_token` has Secure+HttpOnly+SameSite=Lax+Max-Age≈604800 |
+| B5 | Prod cookies  | `pnpm test:cookies`      | `clem-os.session_token` has Secure+HttpOnly+SameSite=Lax+Max-Age≈604800 |
 | B6 | Skills intact | `pnpm sync:skills:verify` | `Vendored skills match skills-lock.json.` (exit 0) — offline, covers the `SKILL.md` files **and** their `references`, plus `.claude/skills/` symlinks with no lock entry (`~ <name>: .claude/skills link with no lock entry`, exit 2 — repair with `pnpm sync:skills`) |
 | B6b | Skills up-to-date | `pnpm sync:skills:check` | `Skills up to date with upstream.` (exit 0) — network. Two distinct failures, both exit 2: `~ N skills drifted` (upstream changed) and `✗ … N skills could not be checked` (404 or network — the skill is tracked by nothing) |
 
@@ -44,7 +44,7 @@ Test with a fresh user "Alice" (`alice@test.local`).
 
 | #   | Step                                                   | Expected result                                                                   |
 | --- | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| A1  | `/register` → submit, onboarding org "Acme"            | Redirects to `/app/acme`, user created, `superAdmin: true` (first user). If `DEV_NOTIFY_EMAIL` is set, a "[albo] New signup: …" email arrives in that inbox (1× per new user, not on re-login). |
+| A1  | `/register` → submit, onboarding org "Acme"            | Redirects to `/app/acme`, user created, `superAdmin: true` (first user). If `DEV_NOTIFY_EMAIL` is set, a "[clem-os] New signup: …" email arrives in that inbox (1× per new user, not on re-login). |
 | A2  | Sign out → re-sign in correct                          | Redirects to `/app/acme` (last org via `lastOrgSlug`)                              |
 | A3  | Sign in with wrong password                            | Inline destructive `<Alert>` above the form (not a toast). No session.            |
 | A4  | `/app/acme` unauthenticated                            | Redirects to `/login` (bare — the app never generates `?redirect=`, so the return URL is **not** preserved; see `KNOWN_ISSUES.md` § "A return-URL search param needs the URL parser") |
@@ -241,5 +241,5 @@ Alice (SA), Bob (member), an "acme" org, and 3 items. Write it in
 - Auth fails → check `BETTER_AUTH_SECRET` + `SITE_URL` on the Convex env.
 - Emails not received → valid `RESEND_API_KEY` + `RESEND_TEST_MODE=false` to
   actually deliver.
-- AI not streaming → `ANTHROPIC_API_KEY` + check `convex/agent.ts` (default
-  model `claude-haiku-4-5`).
+- AI not streaming → `OPENROUTER_API_KEY` + check `convex/agent.ts` (default
+  model `z-ai/glm-5.3-flash`).

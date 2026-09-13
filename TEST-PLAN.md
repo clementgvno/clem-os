@@ -97,7 +97,7 @@ mailbox (real or test), and a private/incognito browser for the second user.
 2. Enter an existing account's email.
 3. Submit.
 
-✅ **Expected**: neutral confirmation screen, **identical** to the next case (3.2). A "Reset your albo password" email arrives in the inbox.
+✅ **Expected**: neutral confirmation screen, **identical** to the next case (3.2). A "Reset your clem-os password" email arrives in the inbox.
 
 ### 3.2 Request with unknown email
 
@@ -135,7 +135,7 @@ mailbox (real or test), and a private/incognito browser for the second user.
 
 ✅ **Expected**:
 - An email **arrives at the CURRENT address** (the old one), not the new one.
-- Subject: "Approve email change on albo".
+- Subject: "Approve email change on clem-os".
 - Body: "Someone requested to change your account email to <new>. If this was you, click below to approve."
 
 ### 4.2 Approval

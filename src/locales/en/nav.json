@@ -39,7 +39,7 @@
   "loading": "Loading…",
   "redirecting": "Redirecting…",
   "onboarding": {
-    "metaTitle": "Create your organization — albo",
+    "metaTitle": "Create your organization — Clem OS",
     "title": "Create your first organization",
     "description": "Your workspace is scoped to an organization. You can create more later.",
     "name": "Name",
@@ -66,7 +66,7 @@
     }
   },
   "admin": {
-    "metaTitle": "Super-admin — albo",
+    "metaTitle": "Super-admin — Clem OS",
     "title": "Super-admin",
     "subtitle": "Deployment-wide view of users and organizations.",
     "back": "← Back",
