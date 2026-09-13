@@ -200,7 +200,7 @@ Stripe.
 ```
 advanced: {
   useSecureCookies: APP_ENV === 'production',
-  cookiePrefix: 'albo',
+  cookiePrefix: 'clem-os',
   defaultCookieAttributes: { sameSite: 'lax', secure: APP_ENV === 'production', httpOnly: true },
 }
 ```
@@ -618,7 +618,7 @@ on `Omit<BetterAuthClientPlugin, …>` — no longer unifies with it.
 | 0.12.4     | 1.6.30      | TS2322                                                                                                               |
 | 0.12.5     | 1.6.30      | TS2322                                                                                                               |
 
-The `tests OK` / `convex-test` column comes from **albo-os**, a downstream
+The `tests OK` / `convex-test` column comes from **clem-os-os**, a downstream
 project that has a `convex-test` suite. This template ships none — don't go
 looking for those 120 tests here. Locally the gates are `pnpm lint`,
 `pnpm build` and `pnpm test:smoke`.
@@ -1110,7 +1110,7 @@ which is the only time fresh skills matter.
 Because that cron is gone, `skills-drift` is the **only** thing watching
 upstream here, so it stays in CI even though it needs the network. A derived
 project that *keeps* a weekly sync cron can drop `skills-drift` from CI and rely
-on `skills-verify` alone, for a 100 % offline CI — that's what Albo OS did. Do
+on `skills-verify` alone, for a 100 % offline CI — that's what another derived project did. Do
 not port that change back here without restoring a cron first.
 
 ## Vendored skills: cross-family links, and why `..` is banned in `references`

@@ -12,7 +12,7 @@ export function getModel() {
 }
 
 export const chatAgent = new Agent(components.agent, {
-  name: 'albo',
+  name: 'clem-os',
   languageModel: getModel(),
   // Per-message system prompt (route/org context) is layered on top at
   // stream time via `buildInstructions` in convex/chat.ts.

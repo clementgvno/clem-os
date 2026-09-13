@@ -138,7 +138,7 @@ other developer-facing text. The only exceptions are user-facing copy in
 
 ## End-to-end test plan
 
-Before forking the template into a prod project, run through `TESTING.md`
+Before each production deployment, run through `TESTING.md`
 (levels 1 → 6, ~70 min). Level 1 is automated (`pnpm typecheck`,
 `pnpm lint`, `pnpm build`, `pnpm test:smoke`, `pnpm sync:skills:verify`,
 `pnpm sync:skills:check`);
