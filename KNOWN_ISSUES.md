@@ -1352,3 +1352,40 @@ The agent's write tools carry `needsApproval: true` (`createTool` from
    `output-denied`, field `part.approval`) — `confirmation.tsx` is driven by
    that. `dynamicTool()` does not support approval (vercel/ai#11434): don't
    convert these tools to dynamic.
+
+## `sync:skills:update` needs the GitHub API — the other three modes don't
+
+`--update` is the only mode that calls `api.github.com`: `resolveTip()` hits
+`/repos/<source>/commits/<trackingRef>` to turn a branch name into an immutable
+SHA. Every other code path — `--check`, `--verify` and a plain
+`pnpm run sync:skills` — reads `raw.githubusercontent.com` only.
+
+That asymmetry bites in a sandboxed agent session (Claude Code on the web, CI
+behind an egress proxy). The proxy injects a placeholder `GITHUB_TOKEN`, the
+script dutifully sends `Authorization: Bearer <placeholder>`, and GitHub
+answers **401**; drop the header and the proxy itself answers **403**. So
+`--update` dies on the first skill while `--check` happily reports the drift it
+is supposed to fix — a confusing pair of symptoms that looks like a script bug
+and is not.
+
+Don't "fix" it by rewriting `resolveTip()` to scrape HTML, and don't hand-edit
+a vendored file to silence the drift. Resolve the tips over the git protocol,
+which the proxy does allow, then let the normal vendoring path do the rest:
+
+```sh
+git ls-remote https://github.com/<source>.git refs/heads/main   # per source
+# write each SHA into the matching `pinnedRef` in skills-lock.json, then:
+pnpm run sync:skills     # vendors at the new pin, rewrites computedHash
+pnpm run sync:skills:verify
+pnpm run sync:skills:check
+```
+
+This is exactly what `--update` does (`runSync` advances `pinnedRef`, then
+vendors), so the resulting lock is byte-identical to the one a networked
+`--update` would have written. Group the lookups by `source`: six of the
+sixteen entries share `better-auth/skills` and five share `TanStack/router`,
+so the whole tree resolves in six `ls-remote` calls, not sixteen.
+
+Reviewing the diff is still mandatory — see `CLAUDE.md`, "When the CI job
+`skills-drift` is red". The transport changed, the prompt-injection surface
+did not.
