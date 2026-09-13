@@ -114,11 +114,32 @@ update project overrides if needed — don't mute the check.
 
 **Two skill channels, don't mix them.** The `sync:skills` pipeline is only
 for library skills that upstream does **not** ship as a Claude Code plugin.
-Skills delivered by a plugin (e.g. `resend@claude-plugins-official`, enabled
-in `.claude/settings.json`) auto-update via the marketplace — never
+Skills delivered by a plugin (`resend@claude-plugins-official`,
+`superpowers@claude-plugins-official` — both enabled in
+`.claude/settings.json`) auto-update via the marketplace — never
 re-vendor them into `skills-lock.json` / `.agents/skills/` (it would
 duplicate the skills and double the update machinery). See `KNOWN_ISSUES.md`
 § "Resend: two integrations".
+
+**Superpowers is process, this file is project truth.** The `superpowers`
+plugin ships a whole methodology (brainstorm → design doc → plan →
+subagent-driven TDD → code review → finish branch) whose skills fire on
+their own, without being asked for. Follow its *process*; never let its
+*project* assumptions override what is written here. Two conflicts are
+already known:
+
+- **There is no unit-test runner in this repo.** `package.json` has no
+  `test` script, so `test-driven-development`'s "write a failing test, watch
+  it fail" has no harness for most changes. The real gate is `TESTING.md`
+  level 1 (`pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test:smoke`,
+  `pnpm sync:skills:verify`, `pnpm sync:skills:check`) plus the manual
+  levels 2 → 6. Don't add a test framework just to satisfy a skill.
+- **`using-git-worktrees` is optional here**, not a prerequisite. A worktree
+  needs its own `.env.local` and its own `convex dev` deployment to be
+  usable at all — decide per task, don't spin one up by reflex.
+
+Superpowers' bias toward more process also sits directly opposite §2
+(Simplicity First) and §3 (Surgical Changes). For a one-file fix, those win.
 
 ---
 

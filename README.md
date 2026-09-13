@@ -333,6 +333,28 @@ missing, refresh the marketplace once with
 > `RESEND_API_KEY` the app uses at runtime, which lives in the Convex env.
 > See `KNOWN_ISSUES.md` § "Resend: two integrations".
 
+## Superpowers plugin (Claude Code)
+
+`.claude/settings.json` also enables **Superpowers**
+(`superpowers@claude-plugins-official`, by Jesse Vincent /
+[obra/superpowers](https://github.com/obra/superpowers)) at project scope. It
+is not a single skill but a development *methodology*: a library of skills
+that trigger on their own — `brainstorming` before code is written,
+`writing-plans`, `subagent-driven-development`, `test-driven-development`,
+`requesting-code-review`, `systematic-debugging`,
+`finishing-a-development-branch`. Expect the agent to ask questions and agree
+on a design before touching files, rather than jumping straight in.
+
+No key, no env var, no `pnpm` step — like Resend it auto-updates through
+Anthropic's official marketplace. If it doesn't show up, refresh the
+marketplace once with `/plugin marketplace update claude-plugins-official`
+and restart Claude Code.
+
+> Superpowers ships generic process; this repo's conventions still win on
+> conflict. See `CLAUDE.md` § "Superpowers is process, this file is project
+> truth" — notably that there is no unit-test runner here and that git
+> worktrees are optional.
+
 ## Common commands
 
 ```bash
