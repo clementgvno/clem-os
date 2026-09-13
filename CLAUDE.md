@@ -257,7 +257,9 @@ never `--update` blindly. Run `pnpm run sync:skills:check` to name the drifting
 skill(s), read what the new upstream version changes, then `--update` and review
 the diff — a skill update is a prompt-injection surface, so read it rather than
 rubber-stamp it. Check that no project override in `CLAUDE.md` /
-`KNOWN_ISSUES.md` became false.
+`KNOWN_ISSUES.md` became false. If `--update` itself dies on a 401/403 from
+`api.github.com`, you are in a sandboxed session — see `KNOWN_ISSUES.md` §
+"`sync:skills:update` needs the GitHub API".
 
 | Skill                                     | Domain                                 | Upstream source                            | Official?  |
 | ----------------------------------------- | -------------------------------------- | ------------------------------------------ | ---------- |
