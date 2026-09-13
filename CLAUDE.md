@@ -534,6 +534,11 @@ export const remove = mutation({
 - Create the target file BEFORE writing a local import.
 - `pnpm dev` runs Vite + `convex dev` in parallel (via `concurrently`).
 - Before commit: `pnpm typecheck` must pass + Convex log must show `ready`.
+- **Always open the pull request after pushing — don't wait to be asked.**
+  This is a solo project: the PR *is* the review surface, and `ci.yml` only
+  runs there, so a pushed branch with no PR is work nobody and nothing has
+  checked. Push, open the PR against `main`, hand back the link. (This
+  overrides the agent default of opening a PR only on explicit request.)
 - Shipped something users can see? Add an in-app changelog entry: metadata
   in `src/lib/changelog.ts`, copy (en + fr) in
   `src/locales/{en,fr}/changelog.json`. The gate is user-visible, not
