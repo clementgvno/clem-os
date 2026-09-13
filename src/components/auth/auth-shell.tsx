@@ -28,7 +28,7 @@ export function AuthShell({ title, description, children }: Props) {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <Link
           to="/"
-          aria-label="clem-os"
+          aria-label="Clem OS"
           className="flex items-center justify-center"
         >
           <Logo />

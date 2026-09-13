@@ -39,7 +39,7 @@
   "loading": "Chargement…",
   "redirecting": "Redirection…",
   "onboarding": {
-    "metaTitle": "Créez votre organisation — clem-os",
+    "metaTitle": "Créez votre organisation — Clem OS",
     "title": "Créez votre première organisation",
     "description": "Votre espace de travail est rattaché à une organisation. Vous pourrez en créer d'autres plus tard.",
     "name": "Nom",
@@ -66,7 +66,7 @@
     }
   },
   "admin": {
-    "metaTitle": "Super-administration — clem-os",
+    "metaTitle": "Super-administration — Clem OS",
     "title": "Super-administration",
     "subtitle": "Vue d'ensemble des utilisateurs et des organisations du déploiement.",
     "back": "← Retour",
