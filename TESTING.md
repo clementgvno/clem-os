@@ -11,7 +11,7 @@ Prerequisites:
   - `BETTER_AUTH_SECRET`
   - `SITE_URL` (`http://localhost:3000` locally)
   - `RESEND_API_KEY` + `RESEND_FROM` + `RESEND_TEST_MODE=true` in dev
-  - `OPENROUTER_API_KEY` (default model: `anthropic/claude-haiku-4.5`)
+  - `OPENROUTER_API_KEY` (default model: `z-ai/glm-5.3-flash`)
 - `.env.local` filled in (`VITE_CONVEX_URL`, `CONVEX_DEPLOYMENT`)
 - 2 browsers (or 1 browser + 1 incognito window) ready for multi-tenant tests
 
@@ -242,4 +242,4 @@ Alice (SA), Bob (member), an "acme" org, and 3 items. Write it in
 - Emails not received → valid `RESEND_API_KEY` + `RESEND_TEST_MODE=false` to
   actually deliver.
 - AI not streaming → `OPENROUTER_API_KEY` + check `convex/agent.ts` (default
-  model `anthropic/claude-haiku-4.5`).
+  model `z-ai/glm-5.3-flash`).
