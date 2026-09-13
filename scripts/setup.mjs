@@ -14,7 +14,7 @@
  *      exits on its own — no manual Ctrl-C).
  *   4. Computes VITE_CONVEX_SITE_URL from VITE_CONVEX_URL (deterministic
  *      .cloud → .site swap) and writes it to .env.local if missing.
- *   5. Prompts for ANTHROPIC_API_KEY, RESEND_API_KEY, RESEND_FROM (with
+ *   5. Prompts for OPENROUTER_API_KEY, RESEND_API_KEY, RESEND_FROM (with
  *      direct dashboard URLs printed inline so the user knows where to look).
  *   6. Generates a fresh BETTER_AUTH_SECRET.
  *   7. Confirms the plan with the user (secrets masked), then applies all
@@ -235,16 +235,16 @@ async function promptSecrets() {
 
   const plan = {}
 
-  // Anthropic
-  if (cx.ANTHROPIC_API_KEY) {
-    ok(`ANTHROPIC_API_KEY already set (${mask(cx.ANTHROPIC_API_KEY)})`)
+  // OpenRouter
+  if (cx.OPENROUTER_API_KEY) {
+    ok(`OPENROUTER_API_KEY already set (${mask(cx.OPENROUTER_API_KEY)})`)
   } else {
     console.log(
-      `\n  ${C.bold}Anthropic API key${C.reset} — for the AI chat agent.\n  ${C.cyan}→ Get yours: https://console.anthropic.com/settings/keys${C.reset}`,
+      `\n  ${C.bold}OpenRouter API key${C.reset} — for the AI chat agent.\n  ${C.cyan}→ Get yours: https://openrouter.ai/keys${C.reset}`,
     )
     let key = ''
     while (!key) {
-      const raw = (await ask('  ANTHROPIC_API_KEY: ')).trim()
+      const raw = (await ask('  OPENROUTER_API_KEY: ')).trim()
       if (!raw) continue
       if (!raw.startsWith('sk-ant-')) {
         warn('Expected format: sk-ant-… (try again, or paste anyway)')
@@ -253,7 +253,7 @@ async function promptSecrets() {
       }
       key = raw
     }
-    plan.ANTHROPIC_API_KEY = key
+    plan.OPENROUTER_API_KEY = key
   }
 
   // Resend

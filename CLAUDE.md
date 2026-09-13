@@ -153,7 +153,7 @@ security.
 - **Backend** : Convex (`^1.x`) — queries, mutations, actions, HTTP routes, file storage, components.
 - **Auth** : Better Auth via `@convex-dev/better-auth` with `magicLink()` + `convex()`. Multi-tenant (orgs/members/invitations/roles) is implemented **natively in the Convex schema** (`organizations`, `organizationMembers`, `invitations` tables). The BA `organization()` plugin is deliberately **not loaded** — its tables aren't first-class Convex (no `withIndex` joins). See `KNOWN_ISSUES.md` for trade-offs.
 - **Emails** : `@convex-dev/resend` for transactional.
-- **AI** : `@convex-dev/agent` backend (default model `claude-haiku-4-5`, override via `ANTHROPIC_MODEL`) + `@assistant-ui/react` front + streaming HTTP route `/api/chat`. Provider abstracted via `getModel()` in `convex/agent.ts`. The chat agent ships with **DB-acting tools** (`convex/agentTools.ts`) scoped to the thread's org: list/create/update/delete `items`.
+- **AI** : `@convex-dev/agent` backend (default model `anthropic/claude-haiku-4.5`, override via `OPENROUTER_MODEL`) + `@assistant-ui/react` front + streaming HTTP route `/api/chat`. Provider abstracted via `getModel()` in `convex/agent.ts`. The chat agent ships with **DB-acting tools** (`convex/agentTools.ts`) scoped to the thread's org: list/create/update/delete `items`.
 - **File storage** : Convex native (`ctx.storage.generateUploadUrl()`), 20 MB cap.
 - **Observability** : Sentry (front + Convex actions). CORS strict, security headers, HMAC verify on webhooks.
 

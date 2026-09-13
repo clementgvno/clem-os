@@ -1,7 +1,7 @@
 # clem-os
 
 B2B SaaS built on a multi-tenant starter: **TanStack Start + Convex + Better
-Auth + Resend + Anthropic + Tailwind v4**. Orgs, members, invitations and
+Auth + Resend + OpenRouter + Tailwind v4**. Orgs, members, invitations and
 roles are wired in, with an AI chat sidebar, transactional emails and
 rate-limiting.
 

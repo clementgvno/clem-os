@@ -1,14 +1,19 @@
-import { anthropic } from '@ai-sdk/anthropic'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { Agent, stepCountIs } from '@convex-dev/agent'
 
 import { components } from './_generated/api'
 import { itemTools } from './agentTools'
 import { BASE_INSTRUCTIONS } from './lib/instructions'
 
-const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-haiku-4-5'
+// OpenRouter model slug, e.g. `anthropic/claude-haiku-4.5`, `openai/gpt-5`.
+// Browse the catalogue at https://openrouter.ai/models — the slug there is
+// what goes in this env var, and it is NOT the provider's own model id.
+const OPENROUTER_MODEL =
+  process.env.OPENROUTER_MODEL ?? 'anthropic/claude-haiku-4.5'
 
 export function getModel() {
-  return anthropic.chat(ANTHROPIC_MODEL)
+  // The provider reads OPENROUTER_API_KEY from the Convex env on its own.
+  return createOpenRouter().chat(OPENROUTER_MODEL)
 }
 
 export const chatAgent = new Agent(components.agent, {
