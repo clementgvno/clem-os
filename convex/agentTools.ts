@@ -10,6 +10,7 @@ import {
   internalQuery
 } from './_generated/server'
 import { parseScope, readMembership } from './lib/agentScope'
+import { requireOrgModule } from './lib/modules'
 import type { Doc, Id } from './_generated/dataModel'
 
 const TITLE_MAX = 120
@@ -29,6 +30,7 @@ export const listItemsInternal = internalQuery({
   args: { orgId: v.id('organizations'), actorUserId: v.id('users') },
   handler: async (ctx, { orgId, actorUserId }) => {
     await readMembership(ctx, orgId, actorUserId)
+    await requireOrgModule(ctx, orgId, 'items')
     const items = await ctx.db
       .query('items')
       .withIndex('by_org', (q) => q.eq('orgId', orgId))
@@ -47,6 +49,7 @@ export const createItemInternal = internalMutation({
   },
   handler: async (ctx, { orgId, actorUserId, title, description }) => {
     await readMembership(ctx, orgId, actorUserId)
+    await requireOrgModule(ctx, orgId, 'items')
     const trimmedTitle = title.trim()
     if (!trimmedTitle || trimmedTitle.length > TITLE_MAX) {
       throw new ConvexError('invalid_title')
@@ -80,6 +83,7 @@ export const updateItemInternal = internalMutation({
     { orgId, actorUserId, itemId, title, description },
   ) => {
     await readMembership(ctx, orgId, actorUserId)
+    await requireOrgModule(ctx, orgId, 'items')
     const item = await ctx.db.get("items", itemId)
     if (!item || item.orgId !== orgId) throw new ConvexError('not_found')
     const trimmedTitle = title.trim()
@@ -112,6 +116,7 @@ export const deleteItemInternal = internalMutation({
   },
   handler: async (ctx, { orgId, actorUserId, itemId }) => {
     const member = await readMembership(ctx, orgId, actorUserId)
+    await requireOrgModule(ctx, orgId, 'items')
     const item = await ctx.db.get("items", itemId)
     if (!item || item.orgId !== orgId) throw new ConvexError('not_found')
     if (item.createdBy !== actorUserId && !ADMIN_ROLES.includes(member.role)) {

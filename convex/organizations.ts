@@ -5,6 +5,7 @@ import {
   requireAppUser,
   requireOrgMember,
   requireOrgRole,
+  requireSuperAdmin,
   safeAppUser,
 } from './lib/auth'
 import { setLastOrgSlug } from './lib/userPrefs'
@@ -71,7 +72,8 @@ export const checkSlug = query({
 export const create = mutation({
   args: { name: v.string(), slug: v.string() },
   handler: async (ctx, { name, slug }) => {
-    const user = await requireAppUser(ctx)
+    // Orgs are handed out by the super admin; everyone else joins by invite.
+    const user = await requireSuperAdmin(ctx)
     const normalizedSlug = slug.toLowerCase().trim()
     if (!SLUG_RE.test(normalizedSlug)) throw new ConvexError('invalid_slug')
     if (RESERVED_SLUGS.has(normalizedSlug))

@@ -6,6 +6,7 @@ import {
   Users,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { ModuleKey } from '../../../convex/lib/modules'
 
 export type NavLeaf = {
   /** i18n key under the `nav` namespace, e.g. `items.dashboard`. */
@@ -13,6 +14,8 @@ export type NavLeaf = {
   to: string
   icon?: LucideIcon
   adminOnly?: boolean
+  /** Hidden unless the super admin enabled this tool on the current org. */
+  module?: ModuleKey
 }
 
 export type NavGroup = {
@@ -36,6 +39,7 @@ export function getNavGroups(): Array<NavGroup> {
           titleKey: 'items.items',
           to: '/app/$orgSlug/items',
           icon: Package,
+          module: 'items',
         },
       ],
     },

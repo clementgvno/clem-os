@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 import { internalMutation, mutation, query } from './_generated/server'
 import { components } from './_generated/api'
 import { requireSuperAdmin } from './lib/auth'
+import { moduleKeyValidator } from './lib/modules'
 import type { FunctionReference } from 'convex/server'
 
 /**
@@ -117,6 +118,7 @@ export const listOrgs = query({
           slug: org.slug,
           name: org.name,
           memberCount: members.length,
+          enabledModules: org.enabledModules ?? [],
           createdAt: org.createdAt,
         }
       }),
@@ -161,6 +163,24 @@ export const setSuperAdmin = mutation({
     if (!target) throw new ConvexError('not_found')
     if (target.superAdmin === value) return null
     await ctx.db.patch("users", userId, { superAdmin: value })
+    return null
+  },
+})
+
+export const setOrgModule = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    module: moduleKeyValidator,
+    enabled: v.boolean(),
+  },
+  handler: async (ctx, { orgId, module, enabled }) => {
+    await requireSuperAdmin(ctx)
+    const org = await ctx.db.get('organizations', orgId)
+    if (!org) throw new ConvexError('not_found')
+    const next = new Set(org.enabledModules ?? [])
+    if (enabled) next.add(module)
+    else next.delete(module)
+    await ctx.db.patch('organizations', orgId, { enabledModules: [...next] })
     return null
   },
 })

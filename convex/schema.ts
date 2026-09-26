@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { moduleKeyValidator } from './lib/modules'
 
 export const roleValidator = v.union(
   v.literal('owner'),
@@ -46,6 +47,8 @@ export default defineSchema({
     name: v.string(),
     logoUrl: v.optional(v.string()),
     logoStorageId: v.optional(v.id('_storage')),
+    // Tools the super admin switched on for this org. Absent = none.
+    enabledModules: v.optional(v.array(moduleKeyValidator)),
     createdBy: v.id('users'),
     createdAt: v.number(),
   }).index('by_slug', ['slug']),

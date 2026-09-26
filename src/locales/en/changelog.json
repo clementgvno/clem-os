@@ -5,6 +5,10 @@
   "subtitle": "The latest improvements to the app.",
   "seeAll": "See all updates",
   "entries": {
+    "per-org-tools": {
+      "title": "Tools tailored to each workspace",
+      "body": "Each workspace now shows only the tools switched on for it, so your sidebar stays focused on what you actually use."
+    },
     "signin-hardening": {
       "title": "A safer sign-in",
       "body": "We updated the component that handles signing in, and tightened how sign-in links are matched to your account. Nothing to do on your side — your existing account and sessions are unaffected."
