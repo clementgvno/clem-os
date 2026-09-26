@@ -17,6 +17,7 @@ import enAccount from '~/locales/en/account.json'
 import enSettings from '~/locales/en/settings.json'
 import enChat from '~/locales/en/chat.json'
 import enChangelog from '~/locales/en/changelog.json'
+import enFuel from '~/locales/en/fuel.json'
 
 import frCommon from '~/locales/fr/common.json'
 import frAuth from '~/locales/fr/auth.json'
@@ -30,6 +31,7 @@ import frAccount from '~/locales/fr/account.json'
 import frSettings from '~/locales/fr/settings.json'
 import frChat from '~/locales/fr/chat.json'
 import frChangelog from '~/locales/fr/changelog.json'
+import frFuel from '~/locales/fr/fuel.json'
 
 export const NAMESPACES = [
   'common',
@@ -44,6 +46,7 @@ export const NAMESPACES = [
   'settings',
   'chat',
   'changelog',
+  'fuel',
 ] as const
 
 export const defaultNS = 'common'
@@ -62,6 +65,7 @@ export const resources = {
     settings: enSettings,
     chat: enChat,
     changelog: enChangelog,
+    fuel: enFuel,
   },
   fr: {
     common: frCommon,
@@ -76,6 +80,7 @@ export const resources = {
     settings: frSettings,
     chat: frChat,
     changelog: frChangelog,
+    fuel: frFuel,
   },
 } as const
 

@@ -1,4 +1,5 @@
 import {
+  Fuel,
   LayoutDashboard,
   Mail,
   Package,
@@ -31,6 +32,11 @@ export function getNavGroups(): Array<NavGroup> {
           titleKey: 'items.dashboard',
           to: '/app/$orgSlug',
           icon: LayoutDashboard,
+        },
+        {
+          titleKey: 'items.fuel',
+          to: '/app/$orgSlug/fuel',
+          icon: Fuel,
         },
         {
           titleKey: 'items.items',

@@ -12,6 +12,17 @@ export const invitationRoleValidator = v.union(
   v.literal('member'),
 )
 
+// Must list the same ids as `FUEL_PRODUCTS` in `convex/lib/fuel.ts`.
+export const fuelProductValidator = v.union(
+  v.literal('sp98'),
+  v.literal('e10'),
+  v.literal('go'),
+  v.literal('go_plus'),
+  v.literal('e85'),
+  v.literal('gpl'),
+  v.literal('adblue'),
+)
+
 export default defineSchema({
   users: defineTable({
     betterAuthId: v.string(),
@@ -80,4 +91,20 @@ export default defineSchema({
     createdBy: v.id('users'),
     createdAt: v.number(),
   }).index('by_org', ['orgId']),
+
+  // Fuel margin: one row per org × product × day, holding only what someone
+  // typed. Stock, PMP and margins are derived by `convex/lib/fuel.ts` on
+  // read — never stored, so a correction propagates. Units are in that file.
+  fuelDays: defineTable({
+    orgId: v.id('organizations'),
+    product: fuelProductValidator,
+    date: v.string(), // YYYY-MM-DD
+    sold: v.optional(v.number()),
+    price: v.optional(v.number()),
+    deliveries: v.array(v.object({ liters: v.number(), price: v.number() })),
+    fixStock: v.optional(v.number()),
+    fixPmp: v.optional(v.number()),
+    updatedBy: v.id('users'),
+    updatedAt: v.number(),
+  }).index('by_org_and_product_and_date', ['orgId', 'product', 'date']),
 })

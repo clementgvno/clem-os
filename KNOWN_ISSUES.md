@@ -941,6 +941,51 @@ that fails the deploy is rejected. Use `pnpm typecheck` separately to keep
 the local feedback loop tight; the Convex check catches the same errors at
 deploy time anyway.
 
+## Adding a Convex module without a deployment (cloud sessions)
+
+`convex/_generated/api.d.ts` lists every module by hand-written import, so a
+new `convex/foo.ts` is invisible to `api.foo` until codegen runs — and
+`pnpm exec convex codegen` refuses to run without `CONVEX_DEPLOYMENT`. In a
+sandboxed session the anonymous local backend doesn't help either: the CLI
+fetches its version from `version.convex.dev`, which the proxy denies.
+
+**Workaround**: add the module to `api.d.ts` in codegen's exact shape — an
+`import type * as foo from "../foo.js";` line and a `foo: typeof foo;` entry,
+both sorted by path, with `lib/foo.ts` becoming `lib_foo` / `"lib/foo"`.
+Nothing else needs touching: `dataModel.d.ts` derives from `typeof schema`
+and `api.js` is `anyApi`. The next `convex dev` (or the Vercel build's
+`convex deploy`) rewrites the file identically. This is the one sanctioned
+exception to "never edit `convex/_generated/*`" — say so in the PR.
+
+## Fuel margin module
+
+- **Only typed facts are stored** (`fuelDays`: volume sold, deliveries, pump
+  price, starting stock or correction). Stock, weighted average cost (PMP)
+  and margins are recomputed by `convex/lib/fuel.ts` from the first starting
+  stock on every read. A first version (a standalone HTML page) copied the
+  previous day's PMP into the next day, so correcting a past delivery left
+  every later day wrong. Recomputing costs nothing at this size.
+- **Integers only.** Liters, 1/10 000 € (purchase, PMP), 1/1 000 € (pump
+  price, as displayed), cents. `rdiv` is the only rounding. `costPumpPrice`
+  compares exactly against the PMP, not through the rounded HT price:
+  0.125 € TTC displays as 0.1042 HT but is 0.104166…, below a 0.1042 PMP.
+- **`fuel.list` reads the org's whole history** (7 products × 365 days ≈
+  2 600 rows a year). Fine for years, but it walks toward Convex's
+  per-function read limit. When it matters, store a monthly checkpoint
+  (closing stock + PMP per product) and start `computeLedger` from it,
+  instead of paginating: the ledger needs every day from the start.
+- **The volume sold on day D is typed on day D+1's screen** ("Sold <day>"
+  column), because the pump counter is read the next morning. A day nobody
+  filled in stays a row; the stock after it shows "—" rather than a wrong
+  number, and today's screen lists the gaps.
+- **Tests live in `tests/`, not next to the code.** `convex/tsconfig.json`
+  has no `allowImportingTsExtensions`, which `node --test` needs; the Convex
+  bundler would skip a `fuel.test.ts` (several dots) anyway.
+- **Tailwind only sees literal class names.** The day grid switches layout
+  with a container query (`@min-[60rem]:…` — the sidebar and AI panel eat
+  the viewport, so a `lg:` breakpoint lies). Building those prefixes by
+  interpolation (`` `${WIDE}:grid` ``) compiles, then generates no CSS.
+
 ## Post-event notification coverage
 
 `notifications.notifyPasswordChanged` fires from the client right after

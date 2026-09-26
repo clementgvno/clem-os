@@ -22,13 +22,14 @@ Prerequisites:
 | B0 | Toolchain pin | `pnpm --version`         | Matches `packageManager` in `package.json` exactly. Run this **first**: on a mismatch B1–B3 fail with `ERR_PNPM_IGNORED_BUILDS`, which blames esbuild rather than the pnpm version |
 | B1 | Typecheck     | `pnpm typecheck`         | Exit 0, no errors             |
 | B2 | Lint          | `pnpm lint`              | Exit 0, 0 warnings            |
+| B2b | Unit         | `pnpm test:unit`         | All tests pass (fuel margin engine, `tests/`) |
 | B3 | Build         | `pnpm build`             | Bundle written to `.output/`  |
 | B4 | Smoke E2E     | `pnpm test:smoke`        | All scenarios pass            |
 | B5 | Prod cookies  | `pnpm test:cookies`      | `clem-os.session_token` has Secure+HttpOnly+SameSite=Lax+Max-Age≈604800 |
 | B6 | Skills intact | `pnpm sync:skills:verify` | `Vendored skills match skills-lock.json.` (exit 0) — offline, covers the `SKILL.md` files **and** their `references`, plus `.claude/skills/` symlinks with no lock entry (`~ <name>: .claude/skills link with no lock entry`, exit 2 — repair with `pnpm sync:skills`) |
 | B6b | Skills up-to-date | `pnpm sync:skills:check` | `Skills up to date with upstream.` (exit 0) — network. Two distinct failures, both exit 2: `~ N skills drifted` (upstream changed) and `✗ … N skills could not be checked` (404 or network — the skill is tracked by nothing) |
 
-B2–B3, B6 and B6b also run in CI on every PR (`.github/workflows/ci.yml`,
+B2–B3 (with B2b), B6 and B6b also run in CI on every PR (`.github/workflows/ci.yml`,
 B6 via the `skills-verify` job, B6b via `skills-drift`). CI covers B0
 implicitly: `pnpm/action-setup@v4` is given no `version:`, so it installs the
 `packageManager` version and cannot drift from local.
@@ -171,6 +172,25 @@ Still logged in as Alice. Prepare a second browser for Bob.
 | P6 | Empty title / > 120 chars                              | Server-side validation error                                      |
 | P7 | Description > 2000 chars                               | Error "description_too_long"                                      |
 | P8 | Items invisible from another org (cf. M8)              | Isolation confirmed                                               |
+
+## Level 3 — Fuel margin (10 min)
+
+`/app/<org>/fuel`. Start from an org with no fuel data.
+
+| #  | Step                                                         | Expected result                                                   |
+| -- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| F1 | Day view, fresh org                                          | Every product shows "Starting stock" (liters + avg. cost), nothing else is editable |
+| F2 | SP98: 10 000 L at 1,4000 → OK, then a delivery of 20 000 L at 1,4300 | PMP 1,4200, ▲ 0,0200 under it                              |
+| F3 | Pump price 1,749                                             | Margin +0,0375 €/L · 2,6 %                                        |
+| F4 | Click "Cost …"                                               | Price becomes 1,704 (1,42 × 1,2 rounded up), margin 0,0000, button filled |
+| F5 | Next day → "Sold <yesterday>" = 5 000                        | Morning stock 25 000 L at 1,4200 · yesterday's margin in € under the field; price carried (dashed) |
+| F6 | Sold > available stock                                       | Field error "In stock: … L", nothing saved                        |
+| F7 | 5 decimals in a price, letters, "12,5" liters                | Field error, value kept, Escape restores the saved one            |
+| F8 | Leave a day's volume empty, open today                       | Orange "Sales missing" banner; the product's stock shows "—" and a link to the right day |
+| F9 | Change a past delivery price                                 | PMP and margins of every later day update (month view)            |
+| F10 | "Correct" → new liters/PMP → OK, then "Back to computed"    | Tag "corrected", chain restarts from it; removing it restores the computed stock |
+| F11 | Month view → expand a product → "Export to Excel"           | Totals weighted by volume; `.xlsx` with a summary sheet + one sheet per product, numbers as numbers; "Entered by" shows each day's author |
+| F12 | Second member of the org, second browser                    | Sees the same data live; a non-member gets `not_a_member`        |
 
 ## Level 4 — Uploads (5 min)
 
