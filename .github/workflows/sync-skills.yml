@@ -1,0 +1,116 @@
+name: Sync skills
+
+# Weekly upstream skill sync. `skills-drift` in ci.yml only *reports* drift, to
+# whoever happens to be pushing that day; this workflow acts on it on a
+# schedule and opens the bump PR itself.
+#
+# An earlier version of this file was deleted because three links in its chain
+# were fragile (KNOWN_ISSUES.md § "sync-skills.yml (cron + auto-PR)"). Each one
+# is handled here rather than left to be rediscovered:
+#
+#  1. Actions may not open a PR until "Allow GitHub Actions to create and
+#     approve pull requests" is enabled (Settings -> Actions -> General), or a
+#     PAT is stored as the SKILLS_SYNC_TOKEN secret. With neither, `gh pr
+#     create` fails and takes the job red with it — loudly, rather than the
+#     workflow going green having silently done nothing.
+#  2. A PR opened with the default GITHUB_TOKEN starts no `on: pull_request`
+#     run, so the bump PR carries no checks of its own. The gate that actually
+#     matters for a skills bump — `--verify`: does the tree match the lock? —
+#     therefore runs HERE, before the PR exists. `lint` and `build` are
+#     deliberately not run: the diff is vendored Markdown and cannot reach
+#     either.
+#  3. Scheduled workflows are best-effort, and GitHub disables them after 60
+#     days without activity on a public repo. `workflow_dispatch` keeps a
+#     manual path open, and `skills-drift` stays in ci.yml as the backstop — so
+#     a cron that goes quiet degrades to the previous behaviour, not to nothing.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-skills
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No `pnpm install`: scripts/sync-skills.mjs is dependency-free, like the
+      # two skills jobs in ci.yml. `--update` is the one mode that calls
+      # api.github.com (it resolves each trackingRef to an immutable SHA), so
+      # it gets a token — see KNOWN_ISSUES.md § "`sync:skills:update` needs the
+      # GitHub API".
+      - name: Bump pins to upstream tips
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/sync-skills.mjs --update
+
+      - name: Did anything move?
+        id: drift
+        # `git status --porcelain`, not `git diff`: a bump that pulls in a new
+        # `references` file writes an UNTRACKED file, which `git diff` reports
+        # as no change at all — the job would go green having dropped it.
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo 'Skills already up to date with upstream.'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            git status --short
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      # Re-hash what --update just wrote. Cheap, offline, and the only gate the
+      # bump PR would otherwise get none of (see note 2 above).
+      - name: Verify the vendored tree
+        if: steps.drift.outputs.changed == 'true'
+        run: node scripts/sync-skills.mjs --verify
+
+      - name: Open or update the bump PR
+        if: steps.drift.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.SKILLS_SYNC_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          branch=chore/sync-skills
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git add -A
+          git commit -m 'chore(skills): bump vendored skills to upstream tips'
+          # Force-push: the branch is a disposable snapshot of "upstream as of
+          # this run", never something a human builds on.
+          git push -f -u origin "$branch"
+
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            echo 'PR already open for this branch — force-pushed the newer bump onto it.'
+            exit 0
+          fi
+
+          gh pr create --base main --head "$branch" \
+            --title 'chore(skills): bump vendored skills to upstream tips' \
+            --body "$(cat <<'BODY'
+          Weekly upstream sync, opened by `.github/workflows/sync-skills.yml`.
+
+          `sync:skills:verify` passed on this tree inside the sync job: the vendored
+          files match the `computedHash` this bump wrote.
+
+          **Read the diff before merging.** A skill is text this project's agents
+          follow as instructions, so an upstream bump is a prompt-injection surface —
+          never rubber-stamp it (`CLAUDE.md` § Skills). Check as well that no project
+          override in `CLAUDE.md` / `KNOWN_ISSUES.md` became false.
+
+          This PR may carry no CI checks of its own: GitHub starts no `on:
+          pull_request` run for a PR opened with the default `GITHUB_TOKEN`. Close and
+          reopen it to force one, or set a `SKILLS_SYNC_TOKEN` PAT.
+          BODY
+          )"

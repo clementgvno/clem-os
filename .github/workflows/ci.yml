@@ -43,11 +43,13 @@ jobs:
           node-version: 22
       - run: node scripts/sync-skills.mjs --verify
 
-  # Upstream skill drift (TESTING.md B6b). Kept in CI here because this repo
-  # has no weekly sync cron to catch drift otherwise — it was deliberately
-  # removed (see KNOWN_ISSUES.md § "sync-skills.yml (cron + auto-PR) was
-  # removed"). When this goes red: run `pnpm run sync:skills:update`, review
-  # the SKILL.md diff, commit. Don't mute the check — see CLAUDE.md.
+  # Upstream skill drift (TESTING.md B6b). Kept in CI even though
+  # `sync-skills.yml` now bumps pins weekly: a cron is best-effort (GitHub
+  # disables it after 60 days of repo inactivity), so this job is the backstop
+  # that catches drift the moment someone is actually coding. See
+  # KNOWN_ISSUES.md § "sync-skills.yml (cron + auto-PR)". When this goes red:
+  # run `pnpm run sync:skills:update`, review the SKILL.md diff, commit — or
+  # just wait for Monday's PR. Don't mute the check — see CLAUDE.md.
   skills-drift:
     runs-on: ubuntu-latest
     steps:

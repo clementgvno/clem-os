@@ -29,7 +29,10 @@ Prerequisites:
 | B6b | Skills up-to-date | `pnpm sync:skills:check` | `Skills up to date with upstream.` (exit 0) — network. Two distinct failures, both exit 2: `~ N skills drifted` (upstream changed) and `✗ … N skills could not be checked` (404 or network — the skill is tracked by nothing) |
 
 B2–B3, B6 and B6b also run in CI on every PR (`.github/workflows/ci.yml`,
-B6 via the `skills-verify` job, B6b via `skills-drift`). CI covers B0
+B6 via the `skills-verify` job, B6b via `skills-drift`). B6b additionally runs
+weekly in `.github/workflows/sync-skills.yml`, which bumps the pins and opens
+a `chore/sync-skills` PR — that PR still needs the diff read before merging.
+CI covers B0
 implicitly: `pnpm/action-setup@v4` is given no `version:`, so it installs the
 `packageManager` version and cannot drift from local.
 B4–B5 remain local: they require a provisioned Convex deployment.
