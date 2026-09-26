@@ -1103,34 +1103,36 @@ the Actions setting, the `version` field, the manifest bootstrap, **and**
 Conventional Commits discipline. For this template's actual release flow
 (manual notes + tag), see `release-tag.yml`.
 
-## sync-skills.yml (cron + auto-PR) was removed — CI drift check replaced it
+## sync-skills.yml (cron + auto-PR) — removed once, restored deliberately
 
-A weekly workflow (Monday cron + `peter-evans/create-pull-request`) used to
-open a `chore/sync-skills` PR when upstream SKILL.md files changed. Removed
-because every link in its chain was fragile while the alternative needs zero
-setup:
+A weekly workflow (Monday cron + `peter-evans/create-pull-request`) used to open
+a `chore/sync-skills` PR when upstream SKILL.md files changed. It was **deleted**
+because every link in its chain was fragile, then **restored** because leaving
+`skills-drift` as the only watcher meant every bump was manual, and a bump only
+happened when someone happened to push. Both halves of that history matter: the
+three failures below are real and did not go away, so the restored workflow
+handles each one explicitly rather than rediscovering it.
 
-- The PR step fails with `GitHub Actions is not permitted to create or
-  approve pull requests` unless a repo Actions setting (off by default, and
-  org-gated for org repos) is flipped on every derived repo.
-- Even then, PRs opened with the default `GITHUB_TOKEN` don't trigger
-  `on: pull_request` workflows — the bot PR shows no CI checks unless you
-  close/reopen it or wire up a PAT.
-- Crons are best-effort: they only run from the default branch, GitHub
-  auto-disables them on public repos after 60 days of inactivity, and on a
-  derived project the Monday cron never fired once in 2 weeks.
+| What broke | Still true? | How `sync-skills.yml` handles it now |
+| --- | --- | --- |
+| The PR step fails with `GitHub Actions is not permitted to create or approve pull requests` unless a repo Actions setting (off by default, org-gated on org repos) is flipped | Yes | Not preventable from inside CI. `gh pr create` fails the **job**, so a run that cannot open the PR goes red instead of green-with-nothing-done. Fix by enabling Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests", or by storing a PAT as the `SKILLS_SYNC_TOKEN` secret |
+| PRs opened with the default `GITHUB_TOKEN` don't trigger `on: pull_request` workflows, so the bot PR carries no checks | Yes | The gate that matters for a Markdown-only bump — `--verify`, does the tree match the lock — runs **inside the sync job**, before the PR exists. `lint`/`build` are deliberately skipped: vendored Markdown cannot reach them. The PR body says so, and says to close/reopen to force a run |
+| Crons are best-effort: default-branch only, auto-disabled after 60 days of inactivity on a public repo (this one is public), and on a derived project the Monday cron never fired once in 2 weeks | Yes | `workflow_dispatch` keeps a manual path, and **`skills-drift` stays in `ci.yml`**. A cron that silently stops therefore degrades to the pre-restore behaviour, not to nothing |
 
-Replacement: the `skills-drift` job in `ci.yml` runs
-`node scripts/sync-skills.mjs --check` on every push/PR (the script is
-dependency-free — no `pnpm install`). Red job → `pnpm run sync:skills:update`,
-review the diff, commit. Drift surfaces exactly when someone is coding,
-which is the only time fresh skills matter.
+The division of labour: `skills-drift` *detects* drift when someone is coding;
+`sync-skills.yml` *acts* on it on a schedule. Neither replaces the other, and a
+red `skills-drift` between two Mondays is still worth acting on rather than
+waiting out.
 
-Because that cron is gone, `skills-drift` is the **only** thing watching
-upstream here, so it stays in CI even though it needs the network. A derived
-project that *keeps* a weekly sync cron can drop `skills-drift` from CI and rely
-on `skills-verify` alone, for a 100 % offline CI — that's what another derived project did. Do
-not port that change back here without restoring a cron first.
+Because `skills-drift` is deliberately kept, CI here still needs the network. A
+derived project that trusts its cron can drop `skills-drift` and rely on
+`skills-verify` alone for a 100 % offline CI — that's what another derived
+project did. Do not port that change back here: the backstop is the point.
+
+**The bot PR is not pre-approved.** It is opened by automation, but a skill is
+text the agents in this repo follow as instructions, so the diff is a
+prompt-injection surface like any other bump — read it (`CLAUDE.md` § Skills).
+Automating the *bump* never automated the *review*.
 
 ## Vendored skills: cross-family links, and why `..` is banned in `references`
 
@@ -1174,8 +1176,9 @@ ever was (0.3–0.5 s vs 1.3–7.8 s), because ≤8 sockets get reused instead o
 thrashing. If you add many more skills, raise the skill count freely — do not
 raise `MAX_IN_FLIGHT`.
 
-The `skills-drift` CI job still carries this network exposure, by design (no
-cron here — previous section). The `skills-verify` job doesn't: it is a pure
+The `skills-drift` CI job still carries this network exposure, by design — it is
+the backstop behind a best-effort cron (previous section), so it stays even
+though `sync-skills.yml` also bumps weekly. The `skills-verify` job doesn't: it is a pure
 local re-hash and issues zero requests, so tree-integrity failures are never
 confounded with a GitHub hiccup.
 
