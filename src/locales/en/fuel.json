@@ -1,0 +1,120 @@
+{
+  "metaTitle": "Fuel — Clem OS",
+  "title": "Fuel",
+  "view": {
+    "label": "View",
+    "day": "Day",
+    "month": "Month"
+  },
+  "nav": {
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today"
+  },
+  "products": {
+    "sp98": "SP98",
+    "e10": "E10",
+    "go": "Diesel",
+    "go_plus": "Diesel+",
+    "e85": "E85",
+    "gpl": "LPG",
+    "adblue": "AdBlue"
+  },
+  "columns": {
+    "product": "Product",
+    "soldOn": "Sold {{day}}",
+    "stock": "Morning stock",
+    "deliveries": "Deliveries",
+    "pmp": "Avg. cost",
+    "price": "Pump price",
+    "margin": "Margin"
+  },
+  "start": {
+    "hint": "To start, enter each product's stock this morning and its average purchase price excl. VAT.",
+    "label": "Starting stock"
+  },
+  "stock": {
+    "at": "at {{pmp}} €",
+    "fix": "Correct",
+    "fixed": "corrected",
+    "backToComputed": "Back to computed",
+    "missing": "{{day}} sales missing",
+    "negative": "Negative stock"
+  },
+  "placeholders": {
+    "liters": "Liters",
+    "purchase": "Price excl. VAT",
+    "pmp": "Avg. cost",
+    "pump": "Incl. VAT",
+    "counter": "Counter"
+  },
+  "delivery": {
+    "add": "+ Delivery",
+    "submit": "Add",
+    "remove": "Remove delivery",
+    "removed": "Delivery removed",
+    "item": "{{liters}} L at {{price}} €",
+    "farFromPmp": "{{product}}: delivered price far from the average cost, please check"
+  },
+  "price": {
+    "cost": "Cost {{price}}",
+    "costTitle": "Pump price for a zero margin"
+  },
+  "margin": {
+    "perLiter": "€/L",
+    "belowCost": "Below cost"
+  },
+  "missingBanner": "Sales missing",
+  "dayTotals": {
+    "sold": "Sold {{day}}",
+    "margin": "Margin {{day}}",
+    "partial": "{{count}}/{{total}} products"
+  },
+  "month": {
+    "sold": "Sold",
+    "margin": "Margin",
+    "average": "Average margin",
+    "marginPerLiter": "Margin €/L",
+    "marginRate": "Margin %",
+    "total": "Total",
+    "export": "Export to Excel",
+    "empty": "Nothing entered this month.",
+    "day": "Day",
+    "stock": "Morning stock",
+    "delivered": "Delivered",
+    "pmp": "Avg. cost",
+    "price": "Pump price",
+    "by": "Entered by",
+    "showDays": "Show day-by-day detail"
+  },
+  "export": {
+    "summary": "Summary",
+    "fileName": "fuel-{{month}}.xlsx",
+    "failed": "Export failed"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "undo": "Undo"
+  },
+  "validation": {
+    "invalid": "Invalid number",
+    "decimals_one": "{{count}} decimal max",
+    "decimals_other": "{{count}} decimals max",
+    "integer": "Whole liters",
+    "range": "Between {{min}} and {{max}}",
+    "required": "Required",
+    "soldExceeds": "In stock: {{liters}} L"
+  },
+  "errors": {
+    "not_started": "Enter the starting stock first",
+    "sold_exceeds_stock": "More than the available stock: correct the stock first",
+    "invalid_value": "Value rejected",
+    "invalid_date": "Invalid date",
+    "stale": "This row changed in the meantime, try again",
+    "cannot_clear_start": "The starting stock can't be removed, correct it instead",
+    "not_a_member": "You are not a member of this organization",
+    "generic": "Could not save",
+    "module_disabled": "The Fuel tool is switched off for this organization"
+  }
+}

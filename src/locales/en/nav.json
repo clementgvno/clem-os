@@ -3,6 +3,7 @@
     "ai": "AI",
     "aiToggle": "Toggle AI panel (⌘J)",
     "breadcrumb": {
+      "fuel": "Fuel",
       "items": "Items",
       "settings": "Settings",
       "members": "Members",
@@ -16,6 +17,7 @@
   },
   "items": {
     "dashboard": "Dashboard",
+    "fuel": "Fuel",
     "items": "Items",
     "members": "Members",
     "invitations": "Invitations",
@@ -108,6 +110,9 @@
   "modules": {
     "items": {
       "name": "Items"
+    },
+    "fuel": {
+      "name": "Fuel"
     }
   }
 }

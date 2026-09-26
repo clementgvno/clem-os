@@ -8,7 +8,7 @@ import type { DataModel, Id } from '../_generated/dataModel'
  * sidebar. Adding a tool = one key here + its page + its i18n entries
  * (`nav:modules.<key>.name` / `.description`).
  */
-export const MODULE_KEYS = ['items'] as const
+export const MODULE_KEYS = ['items', 'fuel'] as const
 
 export type ModuleKey = (typeof MODULE_KEYS)[number]
 

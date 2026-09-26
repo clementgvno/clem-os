@@ -1,0 +1,120 @@
+{
+  "metaTitle": "Carburant — Clem OS",
+  "title": "Carburant",
+  "view": {
+    "label": "Vue",
+    "day": "Jour",
+    "month": "Mois"
+  },
+  "nav": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "today": "Aujourd'hui"
+  },
+  "products": {
+    "sp98": "SP98",
+    "e10": "E10",
+    "go": "GO",
+    "go_plus": "GO+",
+    "e85": "E85",
+    "gpl": "GPL",
+    "adblue": "AdBlue"
+  },
+  "columns": {
+    "product": "Produit",
+    "soldOn": "Vendu {{day}}",
+    "stock": "Stock matin",
+    "deliveries": "Livraisons",
+    "pmp": "PMP",
+    "price": "Prix pompe",
+    "margin": "Marge"
+  },
+  "start": {
+    "hint": "Pour commencer, saisissez le stock de chaque produit ce matin et son prix moyen d'achat HT.",
+    "label": "Stock de départ"
+  },
+  "stock": {
+    "at": "à {{pmp}} €",
+    "fix": "Corriger",
+    "fixed": "corrigé",
+    "backToComputed": "Revenir au calcul",
+    "missing": "Vendu du {{day}} manquant",
+    "negative": "Stock négatif"
+  },
+  "placeholders": {
+    "liters": "Litres",
+    "purchase": "Prix HT",
+    "pmp": "PMP HT",
+    "pump": "TTC",
+    "counter": "Compteur"
+  },
+  "delivery": {
+    "add": "+ Livraison",
+    "submit": "Ajouter",
+    "remove": "Supprimer la livraison",
+    "removed": "Livraison supprimée",
+    "item": "{{liters}} L à {{price}} €",
+    "farFromPmp": "{{product}} : prix livré très loin du PMP, à vérifier"
+  },
+  "price": {
+    "cost": "Coûtant {{price}}",
+    "costTitle": "Prix TTC pour une marge nulle"
+  },
+  "margin": {
+    "perLiter": "€/L",
+    "belowCost": "Sous le PMP"
+  },
+  "missingBanner": "Vendu manquant",
+  "dayTotals": {
+    "sold": "Vendu {{day}}",
+    "margin": "Marge {{day}}",
+    "partial": "{{count}}/{{total}} produits"
+  },
+  "month": {
+    "sold": "Vendu",
+    "margin": "Marge",
+    "average": "Marge moyenne",
+    "marginPerLiter": "Marge €/L",
+    "marginRate": "Marge %",
+    "total": "Total",
+    "export": "Exporter Excel",
+    "empty": "Aucune saisie ce mois-ci.",
+    "day": "Jour",
+    "stock": "Stock matin",
+    "delivered": "Livré",
+    "pmp": "PMP",
+    "price": "Prix pompe",
+    "by": "Saisi par",
+    "showDays": "Voir le détail jour par jour"
+  },
+  "export": {
+    "summary": "Récap",
+    "fileName": "carburant-{{month}}.xlsx",
+    "failed": "Export impossible"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "Annuler",
+    "undo": "Annuler"
+  },
+  "validation": {
+    "invalid": "Nombre invalide",
+    "decimals_one": "{{count}} décimale max",
+    "decimals_other": "{{count}} décimales max",
+    "integer": "Litres entiers",
+    "range": "Entre {{min}} et {{max}}",
+    "required": "Obligatoire",
+    "soldExceeds": "Stock dispo : {{liters}} L"
+  },
+  "errors": {
+    "not_started": "Saisissez d'abord le stock de départ",
+    "sold_exceeds_stock": "Plus que le stock disponible : corrigez le stock d'abord",
+    "invalid_value": "Valeur refusée",
+    "invalid_date": "Date invalide",
+    "stale": "Cette ligne a changé entre-temps, réessayez",
+    "cannot_clear_start": "Le stock de départ ne peut pas être supprimé, corrigez-le",
+    "not_a_member": "Vous n'êtes pas membre de cette organisation",
+    "generic": "Enregistrement impossible",
+    "module_disabled": "L'outil Carburant est désactivé pour cette organisation"
+  }
+}

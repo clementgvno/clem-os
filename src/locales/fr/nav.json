@@ -3,6 +3,7 @@
     "ai": "IA",
     "aiToggle": "Afficher/masquer le panneau IA (⌘J)",
     "breadcrumb": {
+      "fuel": "Carburant",
       "items": "Éléments",
       "settings": "Paramètres",
       "members": "Membres",
@@ -16,6 +17,7 @@
   },
   "items": {
     "dashboard": "Tableau de bord",
+    "fuel": "Carburant",
     "items": "Éléments",
     "members": "Membres",
     "invitations": "Invitations",
@@ -108,6 +110,9 @@
   "modules": {
     "items": {
       "name": "Items"
+    },
+    "fuel": {
+      "name": "Carburant"
     }
   }
 }

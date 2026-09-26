@@ -128,12 +128,16 @@ their own, without being asked for. Follow its *process*; never let its
 *project* assumptions override what is written here. Two conflicts are
 already known:
 
-- **There is no unit-test runner in this repo.** `package.json` has no
-  `test` script, so `test-driven-development`'s "write a failing test, watch
-  it fail" has no harness for most changes. The real gate is `TESTING.md`
-  level 1 (`pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test:smoke`,
-  `pnpm sync:skills:verify`, `pnpm sync:skills:check`) plus the manual
-  levels 2 → 6. Don't add a test framework just to satisfy a skill.
+- **Unit tests cover pure logic only.** `pnpm test:unit` runs Node's
+  built-in runner (`node:test`, no framework) over `tests/**/*.test.ts` —
+  today the fuel margin engine. Money or date math that can live in a
+  dependency-free module goes there, with a test. Anything touching Convex,
+  React or the network has no harness, so `test-driven-development`'s "write
+  a failing test, watch it fail" doesn't apply to it: the gate is `TESTING.md`
+  level 1 (`pnpm typecheck`, `pnpm lint`, `pnpm test:unit`, `pnpm build`,
+  `pnpm test:smoke`, `pnpm sync:skills:verify`, `pnpm sync:skills:check`)
+  plus the manual levels 2 → 6. Don't add a test framework (Vitest, Jest)
+  just to satisfy a skill.
 - **`using-git-worktrees` is optional here**, not a prerequisite. A worktree
   needs its own `.env.local` and its own `convex dev` deployment to be
   usable at all — decide per task, don't spin one up by reflex.
@@ -161,7 +165,7 @@ other developer-facing text. The only exceptions are user-facing copy in
 
 Before each production deployment, run through `TESTING.md`
 (levels 1 → 6, ~70 min). Level 1 is automated (`pnpm typecheck`,
-`pnpm lint`, `pnpm build`, `pnpm test:smoke`, `pnpm sync:skills:verify`,
+`pnpm lint`, `pnpm test:unit`, `pnpm build`, `pnpm test:smoke`, `pnpm sync:skills:verify`,
 `pnpm sync:skills:check`);
 the rest is manual — a sign-off checklist to validate auth, multi-tenant,
 invitations, items CRUD, uploads, account lifecycle, super-admin, AI chat,
@@ -474,6 +478,12 @@ export const remove = mutation({
   leaks enumeration. Raw `error.message` is also locale-fragile and may
   change between BA versions. The classifier collapses safe equivalence
   classes and centralises the user-facing copy.
+- ❌ Storing a derived fuel figure (stock, PMP, margin) in `fuelDays`, or
+  computing one outside `convex/lib/fuel.ts`. Only what someone typed is
+  stored; everything else is recomputed by that one engine (integers only),
+  so a past correction propagates and the screen, the checks in
+  `convex/fuel.ts` and the Excel export can never disagree. See
+  `KNOWN_ISSUES.md` § "Fuel margin module".
 - ❌ Anchor `#section` for nav between major sections.
 - ❌ Unrequested dark/light toggle.
 - ❌ `tailwind.config.js` (Tailwind v4 is CSS-first).

@@ -21,6 +21,7 @@ import { UserButton } from '~/components/auth/user-button'
 type Crumb = { label: string; href?: string }
 
 const CRUMB_SEGMENTS = [
+  'fuel',
   'items',
   'settings',
   'members',

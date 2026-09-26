@@ -5,6 +5,10 @@
   "subtitle": "Les dernières améliorations de l'application.",
   "seeAll": "Voir toutes les nouveautés",
   "entries": {
+    "fuel-margin": {
+      "title": "Suivi de marge carburant",
+      "body": "Une nouvelle page Carburant suit chaque jour, par produit, le stock, le prix moyen pondéré après livraison et votre marge au prix pompe. Le bouton « Coûtant » donne le prix TTC sans perte, le récap du mois s'exporte en Excel, et corriger un jour passé met à jour tous les jours suivants."
+    },
     "per-org-tools": {
       "title": "Des outils adaptés à chaque espace",
       "body": "Chaque espace n'affiche plus que les outils activés pour lui : votre menu reste centré sur ce que vous utilisez vraiment."
