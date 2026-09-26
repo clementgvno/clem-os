@@ -29,6 +29,7 @@ type Org = {
   name: string
   logoUrl?: string | null
   role: string
+  enabledModules: Array<string>
 }
 
 type Me = {
@@ -53,6 +54,8 @@ export function AppSidebar({
   const { t } = useTranslation(['nav', 'common'])
   const groups = getNavGroups()
   const isAdmin = myRole === 'admin' || myRole === 'owner'
+  const enabledModules =
+    orgs.find((o) => o.slug === currentSlug)?.enabledModules ?? []
 
   const renderItem = (item: NavLeaf, size?: 'sm') => {
     const Icon = item.icon
@@ -83,12 +86,18 @@ export function AppSidebar({
   return (
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
-        <OrgSwitcher orgs={orgs} currentSlug={currentSlug} />
+        <OrgSwitcher
+          orgs={orgs}
+          currentSlug={currentSlug}
+          superAdmin={me.superAdmin}
+        />
       </SidebarHeader>
       <SidebarContent>
         {groups.map((group) => {
           const visibleItems = group.items.filter(
-            (item) => !item.adminOnly || isAdmin,
+            (item) =>
+              (!item.adminOnly || isAdmin) &&
+              (!item.module || enabledModules.includes(item.module)),
           )
           if (visibleItems.length === 0) return null
           return (

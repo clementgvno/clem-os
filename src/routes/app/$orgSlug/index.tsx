@@ -29,15 +29,15 @@ function OrgDashboard() {
   const me = useConvexQuery(api.users.me)
   const org = useConvexQuery(api.organizations.bySlug, { slug: orgSlug })
 
-  const myRole =
-    me?.kind === 'ready'
-      ? me.orgs.find((o) => o.slug === orgSlug)?.role
-      : undefined
+  const myOrg =
+    me?.kind === 'ready' ? me.orgs.find((o) => o.slug === orgSlug) : undefined
+  const myRole = myOrg?.role
   const isAdmin = myRole === 'admin' || myRole === 'owner'
+  const itemsEnabled = myOrg?.enabledModules.includes('items') ?? false
 
   const items = useConvexQuery(
     api.items.list,
-    org ? { orgId: org._id } : 'skip',
+    org && itemsEnabled ? { orgId: org._id } : 'skip',
   )
   const members = useConvexQuery(
     api.organizations.listMembers,
@@ -63,7 +63,9 @@ function OrgDashboard() {
         </p>
       </div>
 
-      {org === undefined || items === undefined || members === undefined ? (
+      {org === undefined ||
+      (itemsEnabled && items === undefined) ||
+      members === undefined ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-28 rounded-xl" />
@@ -71,13 +73,15 @@ function OrgDashboard() {
         </div>
       ) : (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          label={t('dashboard:kpi.totalItems')}
-          value={itemsCount}
-          delta={12}
-          hint={t('dashboard:kpi.vsLastMonth')}
-          icon={Package}
-        />
+        {itemsEnabled && (
+          <KpiCard
+            label={t('dashboard:kpi.totalItems')}
+            value={itemsCount}
+            delta={12}
+            hint={t('dashboard:kpi.vsLastMonth')}
+            icon={Package}
+          />
+        )}
         <KpiCard
           label={t('dashboard:kpi.activeMembers')}
           value={membersCount}
@@ -111,7 +115,7 @@ function OrgDashboard() {
         <RoleBreakdownChart members={members} />
       </div>
 
-      <RecentItemsCard items={items} orgSlug={orgSlug} />
+      {itemsEnabled && <RecentItemsCard items={items} orgSlug={orgSlug} />}
     </main>
   )
 }

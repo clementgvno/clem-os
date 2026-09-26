@@ -29,9 +29,11 @@ type Org = {
 export function OrgSwitcher({
   orgs,
   currentSlug,
+  superAdmin,
 }: {
   orgs: Array<Org>
   currentSlug: string
+  superAdmin: boolean
 }) {
   const navigate = useNavigate()
   const { t } = useTranslation(['nav', 'common'])
@@ -115,18 +117,22 @@ export function OrgSwitcher({
                 )}
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => navigate({ to: '/app' })}
-              className="gap-2"
-            >
-              <div className="bg-background flex size-6 items-center justify-center rounded border">
-                <Plus className="size-4" />
-              </div>
-              <span className="text-muted-foreground">
-                {t('nav:orgSwitcher.allOrganizations')}
-              </span>
-            </DropdownMenuItem>
+            {superAdmin && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => navigate({ to: '/app/onboarding' })}
+                  className="gap-2"
+                >
+                  <div className="bg-background flex size-6 items-center justify-center rounded border">
+                    <Plus className="size-4" />
+                  </div>
+                  <span className="text-muted-foreground">
+                    {t('nav:orgSwitcher.newOrganization')}
+                  </span>
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

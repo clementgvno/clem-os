@@ -26,7 +26,7 @@
   },
   "orgSwitcher": {
     "label": "Organisations",
-    "allOrganizations": "Toutes les organisations"
+    "newOrganization": "Nouvelle organisation"
   },
   "theme": {
     "label": "Thème",
@@ -39,9 +39,9 @@
   "loading": "Chargement…",
   "redirecting": "Redirection…",
   "onboarding": {
-    "metaTitle": "Créez votre organisation — Clem OS",
-    "title": "Créez votre première organisation",
-    "description": "Votre espace de travail est rattaché à une organisation. Vous pourrez en créer d'autres plus tard.",
+    "metaTitle": "Nouvelle organisation — Clem OS",
+    "title": "Nouvelle organisation",
+    "description": "Créez un espace pour quelqu'un, puis invitez cette personne. Ses outils sont désactivés au départ — activez-les depuis la page admin.",
     "name": "Nom",
     "namePlaceholder": "Acme Inc.",
     "slug": "Identifiant",
@@ -63,6 +63,10 @@
       "invalid": "Format d'identifiant invalide",
       "reserved": "Cet identifiant est réservé",
       "taken": "Cet identifiant est déjà pris"
+    },
+    "waiting": {
+      "title": "Pas encore d'espace",
+      "description": "Votre compte est prêt. Vous aurez accès dès qu'on vous invitera dans un espace."
     }
   },
   "admin": {
@@ -82,10 +86,13 @@
     },
     "orgs": {
       "title": "Organisations",
-      "description": "Toutes les organisations du déploiement.",
+      "description": "Toutes les organisations du déploiement. Cochez les outils que chacune peut utiliser.",
       "empty": "Aucune organisation.",
       "members_one": "{{count}} membre",
-      "members_other": "{{count}} membres"
+      "members_other": "{{count}} membres",
+      "create": "Nouvelle organisation",
+      "moduleEnabled": "{{module}} activé",
+      "moduleDisabled": "{{module}} désactivé"
     },
     "users": {
       "title": "Utilisateurs",
@@ -96,6 +103,11 @@
       "orgs_other": "{{count}} organisations",
       "isSuperAdmin": "Super-admin",
       "makeSuperAdmin": "Rendre super-admin"
+    }
+  },
+  "modules": {
+    "items": {
+      "name": "Items"
     }
   }
 }

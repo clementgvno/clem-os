@@ -9,6 +9,7 @@ import { useConvexMutation, useConvexQuery } from '@convex-dev/react-query'
 import { Check, X } from 'lucide-react'
 
 import { api } from '../../../convex/_generated/api'
+import { authClient } from '~/lib/auth-client'
 import { getI18n } from '~/lib/i18n'
 import { getLocale } from '~/lib/locale'
 import { Button } from '~/components/ui/button'
@@ -46,6 +47,42 @@ export const Route = createFileRoute('/app/onboarding')({
 })
 
 function OnboardingPage() {
+  const me = useConvexQuery(api.users.me)
+  // Only the super admin hands out orgs; everyone else waits for an invite.
+  if (me?.kind === 'ready' && !me.user.superAdmin) return <WaitingForInvite />
+  return <CreateOrgForm />
+}
+
+function WaitingForInvite() {
+  const navigate = useNavigate()
+  const { t } = useTranslation(['nav', 'account'])
+  return (
+    <main className="flex min-h-svh items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{t('nav:onboarding.waiting.title')}</CardTitle>
+          <CardDescription>
+            {t('nav:onboarding.waiting.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              await authClient.signOut()
+              navigate({ to: '/login' })
+            }}
+          >
+            {t('account:menu.signOut')}
+          </Button>
+        </CardFooter>
+      </Card>
+    </main>
+  )
+}
+
+function CreateOrgForm() {
   const navigate = useNavigate()
   const { t } = useTranslation(['nav', 'validation'])
   const schema = useMemo(
@@ -67,7 +104,11 @@ function OnboardingPage() {
       try {
         const { slug } = await create(value)
         toast.success(t('nav:onboarding.created'))
-        navigate({ to: '/app/$orgSlug', params: { orgSlug: slug } })
+        // Next step is inviting the person this org is for.
+        navigate({
+          to: '/app/$orgSlug/settings/invitations',
+          params: { orgSlug: slug },
+        })
       } catch (err) {
         const code = err instanceof ConvexError ? (err.data as string) : ''
         const messages: Record<string, string> = {

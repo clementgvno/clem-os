@@ -5,6 +5,10 @@
   "subtitle": "Les dernières améliorations de l'application.",
   "seeAll": "Voir toutes les nouveautés",
   "entries": {
+    "per-org-tools": {
+      "title": "Des outils adaptés à chaque espace",
+      "body": "Chaque espace n'affiche plus que les outils activés pour lui : votre menu reste centré sur ce que vous utilisez vraiment."
+    },
     "signin-hardening": {
       "title": "Une connexion plus sûre",
       "body": "Nous avons mis à jour le composant qui gère la connexion et renforcé la façon dont les liens de connexion sont rattachés à votre compte. Rien à faire de votre côté : votre compte et vos sessions en cours ne changent pas."

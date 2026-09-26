@@ -45,6 +45,7 @@ export const me = query({
             name: org.name,
             logoUrl: await resolveLogoUrl(ctx, org),
             role: m.role,
+            enabledModules: org.enabledModules ?? [],
           }
         }),
       )

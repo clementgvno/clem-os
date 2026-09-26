@@ -1004,6 +1004,25 @@ redirects on `!isAuthenticated` will fire during that gap.
    If you add a new route guard, prefer `useAuthState()` over
    `useConvexAuth()` directly.
 
+## Per-org tools ("modules") — guard the server, not just the sidebar
+
+The super admin switches tools on per org from `/app/admin`
+(`organizations.enabledModules`, absent = none). The registry is
+`convex/lib/modules.ts` (`MODULE_KEYS`), shared by the schema, the guards and
+the sidebar (`nav.ts` → `module: '<key>'`).
+
+**Trap**: hiding the nav link is cosmetic. Every Convex function of a tool must
+call `requireOrgModule(ctx, orgId, '<key>')` — including the agent's internal
+functions in `convex/agentTools.ts`, which never go through the UI, so an agent
+could otherwise read or write a switched-off tool. Pages that *read* a tool's
+data outside its own route (the dashboard reads `items.list`) must skip the
+query when the tool is off, or it throws `module_disabled`.
+
+Adding a tool: key in `MODULE_KEYS`, `requireOrgModule` in each of its
+functions, `module` on its nav link, a redirect on its page when disabled, and
+`nav:modules.<key>.name` in en + fr. Org creation is super-admin only
+(`organizations.create`); everyone else joins by invitation.
+
 ## Hot `users` row — a write there invalidates EVERY open query
 
 Every query and mutation in this app resolves the caller through
