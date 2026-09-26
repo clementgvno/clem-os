@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useConvexQuery } from '@convex-dev/react-query'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -35,8 +35,21 @@ export const Route = createFileRoute('/app/$orgSlug/fuel')({
 
 function FuelPage() {
   const { orgSlug } = Route.useParams()
+  const navigate = useNavigate()
+  const me = useConvexQuery(api.users.me)
   const org = useConvexQuery(api.organizations.bySlug, { slug: orgSlug })
-  return org ? <FuelScreen orgId={org._id} /> : <FuelSkeleton />
+  const myOrg =
+    me?.kind === 'ready' ? me.orgs.find((o) => o.slug === orgSlug) : undefined
+  const enabled = myOrg?.enabledModules.includes('fuel') ?? false
+
+  // Tool switched off by the super admin (or never on): back to the dashboard.
+  useEffect(() => {
+    if (myOrg && !enabled) {
+      void navigate({ to: '/app/$orgSlug', params: { orgSlug } })
+    }
+  }, [myOrg, enabled, orgSlug, navigate])
+
+  return org && enabled ? <FuelScreen orgId={org._id} /> : <FuelSkeleton />
 }
 
 function FuelSkeleton() {

@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { fuelProductValidator } from './schema'
 import { requireOrgMember } from './lib/auth'
+import { requireOrgModule } from './lib/modules'
 import { FUEL_LIMITS, addDays, computeLedger, isIsoDate } from './lib/fuel'
 import type { MutationCtx } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
@@ -106,6 +107,7 @@ export const list = query({
   args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
     await requireOrgMember(ctx, orgId)
+    await requireOrgModule(ctx, orgId, 'fuel')
     const docs = await ctx.db
       .query('fuelDays')
       .withIndex('by_org_and_product_and_date', (q) => q.eq('orgId', orgId))
@@ -129,6 +131,7 @@ export const setSold = mutation({
   args: { ...dayArgs, sold: v.union(v.number(), v.null()) },
   handler: async (ctx, { sold, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
     checkDate(key.date)
     const history = await loadHistory(ctx, key)
     const row = requireRow(history, key.date)
@@ -151,6 +154,7 @@ export const setPrice = mutation({
   args: { ...dayArgs, price: v.union(v.number(), v.null()) },
   handler: async (ctx, { price, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
     checkDate(key.date)
     if (price !== null) {
       checkInt(price, FUEL_LIMITS.minPumpPrice, FUEL_LIMITS.maxPumpPrice)
@@ -169,6 +173,7 @@ export const addDelivery = mutation({
   args: { ...dayArgs, liters: v.number(), price: v.number() },
   handler: async (ctx, { liters, price, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
     checkDate(key.date)
     checkInt(liters, 1, FUEL_LIMITS.maxLiters)
     checkInt(price, FUEL_LIMITS.minUnitPrice, FUEL_LIMITS.maxUnitPrice)
@@ -194,6 +199,7 @@ export const removeDelivery = mutation({
   },
   handler: async (ctx, { index, liters, price, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
     const history = await loadHistory(ctx, key)
     await writeDay(ctx, key, history, user._id, (day) => {
       const target = day.deliveries.at(index)
@@ -214,6 +220,7 @@ export const setStock = mutation({
   args: { ...dayArgs, stock: v.number(), pmp: v.number() },
   handler: async (ctx, { stock, pmp, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
     checkDate(key.date)
     checkInt(stock, 0, FUEL_LIMITS.maxLiters)
     checkInt(pmp, FUEL_LIMITS.minUnitPrice, FUEL_LIMITS.maxUnitPrice)
@@ -232,6 +239,7 @@ export const clearStock = mutation({
   args: dayArgs,
   handler: async (ctx, key) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
     const history = await loadHistory(ctx, key)
     const start = history.find((d) => d.fixStock !== undefined)
     if (start?.date === key.date) throw new ConvexError('cannot_clear_start')

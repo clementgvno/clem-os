@@ -114,6 +114,7 @@
     "stale": "This row changed in the meantime, try again",
     "cannot_clear_start": "The starting stock can't be removed, correct it instead",
     "not_a_member": "You are not a member of this organization",
-    "generic": "Could not save"
+    "generic": "Could not save",
+    "module_disabled": "The Fuel tool is switched off for this organization"
   }
 }

@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useConvexQuery } from '@convex-dev/react-query'
 import { useTranslation } from 'react-i18next'
 
@@ -18,18 +19,26 @@ export const Route = createFileRoute('/app/$orgSlug/items')({
 function ItemsPage() {
   const { t } = useTranslation(['items', 'common'])
   const { orgSlug } = Route.useParams()
+  const navigate = useNavigate()
   const me = useConvexQuery(api.users.me)
   const org = useConvexQuery(api.organizations.bySlug, { slug: orgSlug })
+  const myOrg =
+    me?.kind === 'ready' ? me.orgs.find((o) => o.slug === orgSlug) : undefined
+  const itemsEnabled = myOrg?.enabledModules.includes('items') ?? false
   const items = useConvexQuery(
     api.items.list,
-    org ? { orgId: org._id } : 'skip',
+    org && itemsEnabled ? { orgId: org._id } : 'skip',
   )
 
-  const myRole =
-    me?.kind === 'ready'
-      ? me.orgs.find((o) => o.slug === orgSlug)?.role
-      : undefined
+  const myRole = myOrg?.role
   const canBulkDelete = myRole === 'admin' || myRole === 'owner'
+
+  // Tool switched off by the super admin (or never on): back to the dashboard.
+  useEffect(() => {
+    if (myOrg && !itemsEnabled) {
+      void navigate({ to: '/app/$orgSlug', params: { orgSlug } })
+    }
+  }, [myOrg, itemsEnabled, orgSlug, navigate])
 
   return (
     <main className="flex-1 space-y-6 p-6">

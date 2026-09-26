@@ -9,6 +9,10 @@
       "title": "Fuel margin tracking",
       "body": "A new Fuel page tracks, day by day and per product, the stock, the weighted average cost after each delivery and your margin at the pump price. The \"Cost\" button gives the lowest pump price that doesn't sell at a loss, the monthly summary exports to Excel, and correcting a past day updates every day after it."
     },
+    "per-org-tools": {
+      "title": "Tools tailored to each workspace",
+      "body": "Each workspace now shows only the tools switched on for it, so your sidebar stays focused on what you actually use."
+    },
     "signin-hardening": {
       "title": "A safer sign-in",
       "body": "We updated the component that handles signing in, and tightened how sign-in links are matched to your account. Nothing to do on your side — your existing account and sessions are unaffected."

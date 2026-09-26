@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireOrgMember, requireOrgRole } from './lib/auth'
+import { requireOrgModule } from './lib/modules'
 
 const TITLE_MAX = 120
 const DESCRIPTION_MAX = 2000
@@ -9,6 +10,7 @@ export const list = query({
   args: { orgId: v.id('organizations') },
   handler: async (ctx, { orgId }) => {
     await requireOrgMember(ctx, orgId)
+    await requireOrgModule(ctx, orgId, 'items')
     const items = await ctx.db
       .query('items')
       .withIndex('by_org', (q) => q.eq('orgId', orgId))
@@ -41,6 +43,7 @@ export const create = mutation({
   },
   handler: async (ctx, { orgId, title, description }) => {
     const { user } = await requireOrgMember(ctx, orgId)
+    await requireOrgModule(ctx, orgId, 'items')
     const trimmedTitle = title.trim()
     if (!trimmedTitle || trimmedTitle.length > TITLE_MAX) {
       throw new ConvexError('invalid_title')
@@ -70,6 +73,7 @@ export const update = mutation({
     const item = await ctx.db.get("items", itemId)
     if (!item) throw new ConvexError('not_found')
     await requireOrgMember(ctx, item.orgId)
+    await requireOrgModule(ctx, item.orgId, 'items')
     const trimmedTitle = title.trim()
     if (!trimmedTitle || trimmedTitle.length > TITLE_MAX) {
       throw new ConvexError('invalid_title')
@@ -92,6 +96,7 @@ export const remove = mutation({
     const item = await ctx.db.get("items", itemId)
     if (!item) throw new ConvexError('not_found')
     const { user } = await requireOrgMember(ctx, item.orgId)
+    await requireOrgModule(ctx, item.orgId, 'items')
     if (item.createdBy !== user._id) {
       await requireOrgRole(ctx, item.orgId, 'admin')
     }

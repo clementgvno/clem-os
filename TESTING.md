@@ -30,7 +30,10 @@ Prerequisites:
 | B6b | Skills up-to-date | `pnpm sync:skills:check` | `Skills up to date with upstream.` (exit 0) — network. Two distinct failures, both exit 2: `~ N skills drifted` (upstream changed) and `✗ … N skills could not be checked` (404 or network — the skill is tracked by nothing) |
 
 B2–B3 (with B2b), B6 and B6b also run in CI on every PR (`.github/workflows/ci.yml`,
-B6 via the `skills-verify` job, B6b via `skills-drift`). CI covers B0
+B6 via the `skills-verify` job, B6b via `skills-drift`). B6b additionally runs
+weekly in `.github/workflows/sync-skills.yml`, which bumps the pins and opens
+a `chore/sync-skills` PR — that PR still needs the diff read before merging.
+CI covers B0
 implicitly: `pnpm/action-setup@v4` is given no `version:`, so it installs the
 `packageManager` version and cannot drift from local.
 B4–B5 remain local: they require a provisioned Convex deployment.
@@ -45,7 +48,7 @@ Test with a fresh user "Alice" (`alice@test.local`).
 
 | #   | Step                                                   | Expected result                                                                   |
 | --- | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| A1  | `/register` → submit, onboarding org "Acme"            | Redirects to `/app/acme`, user created, `superAdmin: true` (first user). If `DEV_NOTIFY_EMAIL` is set, a "[clem-os] New signup: …" email arrives in that inbox (1× per new user, not on re-login). |
+| A1  | `/register` → submit, onboarding org "Acme"            | Redirects to `/app/acme/settings/invitations`, user created, `superAdmin: true` (first user). If `DEV_NOTIFY_EMAIL` is set, a "[clem-os] New signup: …" email arrives in that inbox (1× per new user, not on re-login). |
 | A2  | Sign out → re-sign in correct                          | Redirects to `/app/acme` (last org via `lastOrgSlug`)                              |
 | A3  | Sign in with wrong password                            | Inline destructive `<Alert>` above the form (not a toast). No session.            |
 | A4  | `/app/acme` unauthenticated                            | Redirects to `/login` (bare — the app never generates `?redirect=`, so the return URL is **not** preserved; see `KNOWN_ISSUES.md` § "A return-URL search param needs the URL parser") |
@@ -135,11 +138,12 @@ Still logged in as Alice. Prepare a second browser for Bob.
 | M1  | `/app/acme/settings/invitations` → invite `bob@test.local`  | Email sent, listed as pending                                       |
 | M2  | Browser 2 (incognito) → open the invitation link            | `/accept-invite/<token>` accessible unauthenticated                 |
 | M3  | Sign up Bob via the invitation flow                         | Bob created, automatically a member of Acme with "member" role. **No email-verification step**: the invite token pre-verifies the email (token-gated), Bob is signed in and lands on `/app/acme` directly |
-| M4  | Bob visits `/app/acme/items`                                | Sees the list (empty or Alice's items), can create                  |
+| M4  | Bob visits `/app/acme/items` (Items enabled on Acme, cf. SA6) | Sees the list (empty or Alice's items), can create                  |
 | M5  | Alice changes Bob's role → "admin"                          | Persists, Bob sees the updated badge                                |
-| M6  | Bob creates a second org "Beta"                             | Switches to `/app/beta`, Alice is NOT a member                      |
-| M7  | Alice navigates to `/app/beta` directly                     | Redirects to `/app` or 403                                          |
-| M8  | Items isolated: Alice sees Acme items only                  | No Beta items on Alice's side                                       |
+| M6  | Bob's org switcher                                          | No "New organization" entry (super admin only); `organizations.create` from Bob → `not_super_admin` |
+| M7  | Alice creates "Beta" (switcher → New organization), then Bob navigates to `/app/beta` directly | Alice lands on `/app/beta/settings/invitations`; Bob is redirected to `/app` |
+| M8  | Items isolated between Acme and Beta                        | No Beta items in Acme, and vice versa                               |
+| M12 | Fresh non-SA user signs up without an invitation            | `/app/onboarding` shows "No workspace yet" + Sign out, no create form |
 | M9  | Switch org via top-bar dropdown                             | Routes recalculated, items reloaded                                 |
 | M10 | Bob (Acme admin) deletes an item created by Alice           | Allowed (admin override on creator-only)                            |
 | M11 | Non-admin member tries to delete another user's item        | Error "forbidden", no deletion                                      |
@@ -162,6 +166,8 @@ Still logged in as Alice. Prepare a second browser for Bob.
 
 ## Level 3 — Items CRUD (8 min)
 
+Prerequisite: the Items tool is enabled on Acme (`/app/admin`, cf. SA6).
+
 | #  | Step                                                   | Expected result                                                   |
 | -- | ------------------------------------------------------ | ----------------------------------------------------------------- |
 | P1 | Create item via form                                   | Appears instantly in the list                                     |
@@ -175,7 +181,7 @@ Still logged in as Alice. Prepare a second browser for Bob.
 
 ## Level 3 — Fuel margin (10 min)
 
-`/app/<org>/fuel`. Start from an org with no fuel data.
+`/app/<org>/fuel`. Prerequisite: the Fuel tool is enabled on the org (`/app/admin`, cf. SA6). Start from an org with no fuel data.
 
 | #  | Step                                                         | Expected result                                                   |
 | -- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
@@ -191,6 +197,7 @@ Still logged in as Alice. Prepare a second browser for Bob.
 | F10 | "Correct" → new liters/PMP → OK, then "Back to computed"    | Tag "corrected", chain restarts from it; removing it restores the computed stock |
 | F11 | Month view → expand a product → "Export to Excel"           | Totals weighted by volume; `.xlsx` with a summary sheet + one sheet per product, numbers as numbers; "Entered by" shows each day's author |
 | F12 | Second member of the org, second browser                    | Sees the same data live; a non-member gets `not_a_member`        |
+| F13 | Untick "Fuel" on the org in `/app/admin`                  | Fuel leaves the sidebar; `/app/<org>/fuel` redirects to `/app/<org>`; `fuel.*` throw `module_disabled` |
 
 ## Level 4 — Uploads (5 min)
 
@@ -220,6 +227,9 @@ Still logged in as Alice. Prepare a second browser for Bob.
 | SA3 | Toggle `superAdmin` on another user                | Persists, the other user sees `/app/admin`                        |
 | SA4 | Last-SA guard: remove own SA flag when sole SA     | Error "cannot_demote_last_superadmin"                             |
 | SA5 | `purgeExcept` (dev cleanup) — dev only             | Keeps only the specified email, deletes everything else           |
+| SA6 | Tick "Items" on Acme in the Organizations card      | Toast; Items appears in Acme's sidebar + dashboard live (no reload) |
+| SA7 | Untick "Items" on Acme                              | Items leaves the sidebar/dashboard; `/app/acme/items` redirects to `/app/acme`; `items.*` and the agent's item tools throw `module_disabled` |
+| SA8 | "New organization" button in the Organizations card | Opens `/app/onboarding`; the created org starts with every tool off |
 
 ## Level 5 — AI panel (10 min)
 
@@ -229,7 +239,7 @@ Still logged in as Alice. Prepare a second browser for Bob.
 | C1b | Press ⌘J / Ctrl+J (or the header AI button), then reload | Panel toggles; state persists across reload (cookie `ai_panel_state`) |
 | C2  | Send a simple message ("ping")                          | Stream visible token by token; "Thinking…" before first token; no UI blocking |
 | C2b | Ask for a formatted response ("bullet list + bold")     | Markdown rendered via streamdown (bullets, bold, inline code, tables) |
-| C3  | Ask the agent "list my items"                           | `listItems` runs (read, no approval), collapsible tool call, response lists Acme items |
+| C3  | Ask the agent "list my items" (Items enabled, cf. SA6)  | `listItems` runs (read, no approval), collapsible tool call, response lists Acme items |
 | C4  | "create an item titled Test"                            | `createItem` shows **Confirm / Reject** buttons; **Confirm** writes it and generation resumes; item visible in `/app/acme/items` |
 | C4b | Repeat, then click **Reject**                           | "Action rejected", nothing written; agent acknowledges            |
 | C5  | While a long answer streams, click **Stop**             | Generation aborts                                                 |

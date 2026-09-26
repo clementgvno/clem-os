@@ -114,6 +114,7 @@
     "stale": "Cette ligne a changé entre-temps, réessayez",
     "cannot_clear_start": "Le stock de départ ne peut pas être supprimé, corrigez-le",
     "not_a_member": "Vous n'êtes pas membre de cette organisation",
-    "generic": "Enregistrement impossible"
+    "generic": "Enregistrement impossible",
+    "module_disabled": "L'outil Carburant est désactivé pour cette organisation"
   }
 }
