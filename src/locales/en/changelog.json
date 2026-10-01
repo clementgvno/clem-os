@@ -5,6 +5,10 @@
   "subtitle": "The latest improvements to the app.",
   "seeAll": "See all updates",
   "entries": {
+    "fuel-morning-stock": {
+      "title": "Fuel: enter the morning stock",
+      "body": "Each morning, type the stock read on the tank gauge: yesterday's volume sold and its margin are worked out for you. A missed morning no longer blocks the days after it, and the days already entered stay as they were."
+    },
     "fuel-margin": {
       "title": "Fuel margin tracking",
       "body": "A new Fuel page tracks, day by day and per product, the stock, the weighted average cost after each delivery and your margin at the pump price. The \"Cost\" button gives the lowest pump price that doesn't sell at a loss, the monthly summary exports to Excel, and correcting a past day updates every day after it."

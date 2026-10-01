@@ -35,18 +35,19 @@
   },
   "stock": {
     "at": "at {{pmp}} €",
-    "fix": "Correct",
-    "fixed": "corrected",
-    "backToComputed": "Back to computed",
-    "missing": "{{day}} sales missing",
+    "fixPmp": "Correct PMP",
+    "pmpFixed": "PMP corrected",
     "negative": "Negative stock"
+  },
+  "sold": {
+    "negative": "Negative, check it"
   },
   "placeholders": {
     "liters": "Liters",
     "purchase": "Price excl. VAT",
     "pmp": "Avg. cost",
     "pump": "Incl. VAT",
-    "counter": "Counter"
+    "gauge": "Gauge"
   },
   "delivery": {
     "add": "+ Delivery",
@@ -64,7 +65,7 @@
     "perLiter": "€/L",
     "belowCost": "Below cost"
   },
-  "missingBanner": "Sales missing",
+  "missingBanner": "Missing stock",
   "dayTotals": {
     "sold": "Sold {{day}}",
     "margin": "Margin {{day}}",
@@ -104,11 +105,11 @@
     "integer": "Whole liters",
     "range": "Between {{min}} and {{max}}",
     "required": "Required",
-    "soldExceeds": "In stock: {{liters}} L"
+    "stockExceeds": "Available yesterday: {{liters}} L"
   },
   "errors": {
     "not_started": "Enter the starting stock first",
-    "sold_exceeds_stock": "More than the available stock: correct the stock first",
+    "stock_exceeds_available": "More than yesterday's available stock: add the missing delivery first",
     "invalid_value": "Value rejected",
     "invalid_date": "Invalid date",
     "stale": "This row changed in the meantime, try again",

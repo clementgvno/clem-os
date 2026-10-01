@@ -23,9 +23,9 @@ import { cn } from '~/lib/utils'
 // line per product; otherwise → a two-column card.
 const GRID = cn(
   'grid grid-cols-2 gap-x-4 gap-y-3',
-  '[grid-template-areas:"prod_margin"_"sold_stock"_"price_pmp"_"deliv_deliv"]',
-  '@min-[60rem]:grid-cols-[92px_124px_128px_minmax(150px,1fr)_76px_132px_124px]',
-  '@min-[60rem]:[grid-template-areas:"prod_sold_stock_deliv_pmp_price_margin"]',
+  '[grid-template-areas:"prod_margin"_"stock_sold"_"price_pmp"_"deliv_deliv"]',
+  '@min-[60rem]:grid-cols-[92px_128px_124px_minmax(150px,1fr)_76px_132px_124px]',
+  '@min-[60rem]:[grid-template-areas:"prod_stock_sold_deliv_pmp_price_margin"]',
 )
 const LABEL =
   'text-muted-foreground mb-1 text-[11px] font-medium tracking-wide uppercase @min-[60rem]:hidden'
@@ -60,13 +60,13 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
   })
   const started = products.some((p) => p.ledger.length > 0)
 
-  // Days before yesterday still waiting for their volume sold (only on today's
-  // screen: yesterday's is the field right there).
+  // Past mornings whose stock is still unknown (only on today's screen:
+  // today's is the field right there).
   const missing = new Map<string, Array<FuelProduct>>()
   if (date === today) {
     for (const { product, ledger } of products) {
       for (const r of ledger) {
-        if (r.date < yesterday && r.sold === null) {
+        if (r.date < today && r.openStock === null) {
           missing.set(r.date, [...(missing.get(r.date) ?? []), product])
         }
       }
@@ -98,7 +98,7 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
             <button
               key={d}
               type="button"
-              onClick={() => onGoto(addDays(d, 1))}
+              onClick={() => onGoto(d)}
               className="bg-background text-foreground hover:bg-accent rounded-full px-2.5 py-0.5 text-xs"
             >
               {fmt.shortDay(d)} · {ps.map((p) => t(`products.${p}`)).join(', ')}
@@ -117,10 +117,10 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
           )}
         >
           <span>{t('columns.product')}</span>
+          <span className="text-right">{t('columns.stock')}</span>
           <span className="text-right">
             {t('columns.soldOn', { day: fmt.shortDay(yesterday) })}
           </span>
-          <span className="text-right">{t('columns.stock')}</span>
           <span>{t('columns.deliveries')}</span>
           <span className="text-right">{t('columns.pmp')}</span>
           <span className="text-right">{t('columns.price')}</span>
@@ -138,7 +138,6 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
               date={date}
               yesterday={yesterday}
               actions={actions}
-              onGoto={onGoto}
             />
           ))}
         </div>
@@ -185,7 +184,6 @@ function DayRow({
   date,
   yesterday,
   actions,
-  onGoto,
 }: {
   product: FuelProduct
   ledger: Array<FuelRow>
@@ -194,7 +192,6 @@ function DayRow({
   date: string
   yesterday: string
   actions: FuelActions
-  onGoto: (date: string) => void
 }) {
   const { t } = useTranslation('fuel')
   const fmt = useFormatters()
@@ -205,9 +202,11 @@ function DayRow({
   const id = (field: string) => `fuel-${product}-${field}`
 
   // --- Stock this morning -------------------------------------------------
+  // Read on the gauge every morning. The PMP is typed only to start, or to
+  // correct it; otherwise it carries over.
+  const isStart = ledger[0]?.date === date
   let stockCell: ReactNode
   if (!row || fixing) {
-    const isStart = ledger[0]?.date === date
     stockCell = (
       <div>
         {!row && (
@@ -229,78 +228,45 @@ function DayRow({
           }}
           onCancel={row ? () => setFixing(false) : undefined}
           className="grid-cols-1"
-          extra={
-            row?.fixed && !isStart ? (
-              <button
-                type="button"
-                className={LINK}
-                onClick={() =>
-                  void actions.clearStock(product, date).then(
-                    () => setFixing(false),
-                    () => {},
-                  )
-                }
-              >
-                {t('stock.backToComputed')}
-              </button>
-            ) : null
-          }
         />
       </div>
-    )
-  } else if (row.openStock === null) {
-    const gap = [...ledger]
-      .reverse()
-      .find((r) => r.date < date && r.sold === null)
-    stockCell = (
-      <>
-        <div
-          className={cn(
-            BIG,
-            'text-muted-foreground',
-            '@min-[60rem]:justify-end',
-          )}
-        >
-          —
-        </div>
-        {gap && gap.date !== yesterday && (
-          <div className={cn(SUB, '@min-[60rem]:justify-end')}>
-            <button
-              type="button"
-              className={cn(LINK, 'text-warning')}
-              onClick={() => onGoto(addDays(gap.date, 1))}
-            >
-              {t('stock.missing', { day: fmt.shortDay(gap.date) })}
-            </button>
-          </div>
-        )}
-      </>
     )
   } else {
     stockCell = (
       <>
-        <div
-          className={cn(
-            BIG,
-            'font-medium',
-            '@min-[60rem]:justify-end',
-            row.negativeStock && 'text-destructive',
-          )}
-        >
-          {fmt.liters(row.openStock)}
-          <span className="text-muted-foreground ml-1 text-xs font-normal">
-            L
-          </span>
-        </div>
+        <NumberField
+          id={id('stock')}
+          label={`${name} · ${t('columns.stock')}`}
+          value={row.openStock !== null ? fmt.inputLiters(row.openStock) : ''}
+          unit="L"
+          decimals={0}
+          placeholder={t('placeholders.gauge')}
+          tone={
+            row.fixed
+              ? 'default'
+              : row.openStock !== null
+                ? 'carried'
+                : 'missing'
+          }
+          validate={(v) =>
+            checks.liters(v) ??
+            (yRow?.available != null && v > yRow.available
+              ? t('validation.stockExceeds', {
+                  liters: fmt.liters(yRow.available),
+                })
+              : null)
+          }
+          onCommit={(v) => actions.setStock(product, date, v)}
+        />
         <div className={cn(SUB, '@min-[60rem]:justify-end')}>
           {row.negativeStock ? (
             <span className="text-destructive">{t('stock.negative')}</span>
           ) : row.openPmp !== null ? (
             <span>{t('stock.at', { pmp: fmt.unit(row.openPmp) })}</span>
           ) : null}
-          {row.fixed && ledger[0]?.date !== date && (
+          {row.entry?.fixPmp !== undefined && !isStart && (
             <span className="bg-muted rounded-full border px-1.5 text-[11px]">
-              {t('stock.fixed')}
+              {t('stock.pmpFixed')}
             </span>
           )}
           <button
@@ -308,7 +274,7 @@ function DayRow({
             className={LINK}
             onClick={() => setFixing(true)}
           >
-            {t('stock.fix')}
+            {t('stock.fixPmp')}
           </button>
         </div>
       </>
@@ -399,58 +365,51 @@ function DayRow({
         <span>{name}</span>
       </div>
 
+      <div className={cn('[grid-area:stock]', !fixing && row && RIGHT)}>
+        <div className={LABEL}>{t('columns.stock')}</div>
+        {stockCell}
+      </div>
+
       <div className={cn('[grid-area:sold]', RIGHT)}>
         <div className={LABEL}>
           {t('columns.soldOn', { day: fmt.shortDay(yesterday) })}
         </div>
-        {yRow ? (
-          <>
-            <NumberField
-              id={id('sold')}
-              label={`${name} · ${t('columns.soldOn', { day: fmt.shortDay(yesterday) })}`}
-              value={yRow.sold !== null ? fmt.inputLiters(yRow.sold) : ''}
-              unit="L"
-              decimals={0}
-              placeholder={t('placeholders.counter')}
-              tone={yRow.sold === null ? 'missing' : 'default'}
-              validate={(v) =>
-                checks.liters(v) ??
-                (yRow.available !== null && v > yRow.available
-                  ? t('validation.soldExceeds', {
-                      liters: fmt.liters(yRow.available),
-                    })
-                  : null)
-              }
-              onCommit={(v) => actions.setSold(product, yesterday, v)}
-            />
-            {yRow.marginCents !== null && (
-              <div
-                className={cn(
-                  SUB,
-                  '@min-[60rem]:justify-end',
-                  signClass(yRow.marginCents),
-                )}
-              >
-                {fmt.euros(yRow.marginCents)}
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            className={cn(
-              BIG,
-              'text-muted-foreground',
-              '@min-[60rem]:justify-end',
-            )}
-          >
-            —
+        <div
+          className={cn(
+            BIG,
+            '@min-[60rem]:justify-end',
+            yRow?.sold == null && 'text-muted-foreground',
+            yRow?.negativeSold && 'text-destructive',
+          )}
+        >
+          {yRow?.sold != null ? (
+            <>
+              {fmt.liters(yRow.sold)}
+              <span className="text-muted-foreground ml-1 text-xs font-normal">
+                L
+              </span>
+            </>
+          ) : (
+            '—'
+          )}
+        </div>
+        {yRow?.negativeSold ? (
+          <div className={cn(SUB, 'text-destructive @min-[60rem]:justify-end')}>
+            {t('sold.negative')}
           </div>
+        ) : (
+          yRow?.marginCents != null && (
+            <div
+              className={cn(
+                SUB,
+                '@min-[60rem]:justify-end',
+                signClass(yRow.marginCents),
+              )}
+            >
+              {fmt.euros(yRow.marginCents)}
+            </div>
+          )
         )}
-      </div>
-
-      <div className={cn('[grid-area:stock]', !fixing && row && RIGHT)}>
-        <div className={LABEL}>{t('columns.stock')}</div>
-        {stockCell}
       </div>
 
       <div className="[grid-area:deliv]">

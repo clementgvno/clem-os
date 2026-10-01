@@ -3,10 +3,12 @@
  * functions, the UI and the Excel export, so every surface shows the same
  * numbers. Covered by `tests/fuel.test.ts` (`pnpm test:unit`).
  *
- * Only facts typed by a person are stored (volume sold, deliveries, pump
- * price, starting stock or a stock correction). Everything else — stock,
- * weighted average cost (PMP), margins — is recomputed here on every read, so
- * correcting a past day propagates to every later day.
+ * Only facts typed by a person are stored (morning stock read on the tank
+ * gauge, deliveries, pump price, the starting PMP or a PMP correction).
+ * Everything else — volume sold, weighted average cost (PMP), margins — is
+ * recomputed here on every read, so correcting a past day propagates to every
+ * later day. The volume sold on day D is what left the tank between two
+ * readings: D's morning stock + D's deliveries − D+1's morning stock.
  *
  * Integers only. Units:
  *   liters      integer L
@@ -42,20 +44,22 @@ export type FuelDelivery = { liters: number; price: number }
 
 export type FuelEntry = {
   date: string
+  /** Legacy: volume sold typed on the pump counter. Wins over the derived one. */
   sold?: number
   price?: number
   deliveries: ReadonlyArray<FuelDelivery>
-  /** Starting stock, or a correction after a tank dip. Always set together. */
+  /** Stock read on the tank gauge this morning. */
   fixStock?: number
+  /** PMP this morning: the starting one, or a correction. Needs `fixStock`. */
   fixPmp?: number
 }
 
 export type FuelRow = {
   date: string
   entry: FuelEntry | null
-  /** The morning stock comes from `fixStock` / `fixPmp`, not from the day before. */
+  /** The morning stock was typed (`fixStock`), not computed from the day before. */
   fixed: boolean
-  /** Stock in the tank this morning; null when an earlier day lacks its volume sold. */
+  /** Stock in the tank this morning; null when nobody typed it and it can't be computed. */
   openStock: number | null
   openPmp: number | null
   deliveredLiters: number
@@ -69,7 +73,10 @@ export type FuelRow = {
   priceHt: number | null
   /** priceHt - pmp, p4 per liter. */
   margin: number | null
+  /** Typed (legacy), or derived from the next morning's stock; null when unknown. */
   sold: number | null
+  /** The next morning's stock is above what was available: a reading or a delivery is wrong. */
+  negativeSold: boolean
   closeStock: number | null
   marginCents: number | null
   costCents: number | null
@@ -147,10 +154,10 @@ export function parseDecimal(input: string, decimals: number): ParsedDecimal {
 }
 
 /**
- * One row per calendar day, from the first starting stock to `until` (or the
- * last entry if later). A day nobody filled in is still a row, so a missing
- * volume shows up instead of being skipped. Entries before the first starting
- * stock are ignored.
+ * One row per calendar day, from the first starting stock (stock + PMP) to
+ * `until` (or the last entry if later). A day nobody filled in is still a row,
+ * so a missing reading shows up instead of being skipped. Entries before the
+ * first starting stock are ignored.
  */
 export function computeLedger(
   entries: ReadonlyArray<FuelEntry>,
@@ -158,7 +165,10 @@ export function computeLedger(
 ): Array<FuelRow> {
   const byDate = new Map(entries.map((e) => [e.date, e]))
   const dates = entries.map((e) => e.date).sort()
-  const start = dates.find((d) => byDate.get(d)?.fixStock !== undefined)
+  const start = dates.find((d) => {
+    const e = byDate.get(d)
+    return e?.fixStock !== undefined && e.fixPmp !== undefined
+  })
   if (start === undefined) return []
   const last = dates[dates.length - 1]
   const end = last > until ? last : until
@@ -171,9 +181,9 @@ export function computeLedger(
     const entry = byDate.get(date) ?? null
     const fixStock = entry?.fixStock
     const fixPmp = entry?.fixPmp
-    const fixed = fixStock !== undefined && fixPmp !== undefined
+    const fixed = fixStock !== undefined
     const openStock: number | null = fixed ? fixStock : stock
-    const openPmp: number | null = fixed ? fixPmp : pmp
+    const openPmp: number | null = fixPmp ?? pmp
 
     let deliveredLiters = 0
     let deliveredValue = 0
@@ -198,7 +208,15 @@ export function computeLedger(
     const dayPrice: number | null = entry?.price ?? price
     const priceHt = dayPrice === null ? null : priceExclVat(dayPrice)
     const margin = priceHt === null || dayPmp === null ? null : priceHt - dayPmp
-    const sold = entry?.sold ?? null
+    const nextStock = byDate.get(addDays(date, 1))?.fixStock
+    const sold: number | null =
+      entry?.sold ??
+      (available === null || nextStock === undefined
+        ? null
+        : available - nextStock)
+    const negativeSold = sold !== null && sold < 0
+    // A negative volume has no margin: keep it out of the totals.
+    const billed = negativeSold ? null : sold
     const closeStock: number | null =
       available === null || sold === null ? null : available - sold
 
@@ -216,11 +234,12 @@ export function computeLedger(
       priceHt,
       margin,
       sold,
+      negativeSold,
       closeStock,
       marginCents:
-        margin === null || sold === null ? null : rdiv(margin * sold, 100),
+        margin === null || billed === null ? null : rdiv(margin * billed, 100),
       costCents:
-        dayPmp === null || sold === null ? null : rdiv(dayPmp * sold, 100),
+        dayPmp === null || billed === null ? null : rdiv(dayPmp * billed, 100),
       negativeStock,
     })
     stock = closeStock
@@ -239,7 +258,7 @@ export type FuelTotals = {
   marginRateTenths: number | null
 }
 
-/** Totals over the rows whose margin is known (volume sold typed). */
+/** Totals over the rows whose margin is known (volume sold known). */
 export function summarize(rows: ReadonlyArray<FuelRow>): FuelTotals {
   let sold = 0
   let marginCents = 0

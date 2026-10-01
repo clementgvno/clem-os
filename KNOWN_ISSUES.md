@@ -974,10 +974,21 @@ exception to "never edit `convex/_generated/*`" — say so in the PR.
   per-function read limit. When it matters, store a monthly checkpoint
   (closing stock + PMP per product) and start `computeLedger` from it,
   instead of paginating: the ledger needs every day from the start.
-- **The volume sold on day D is typed on day D+1's screen** ("Sold <day>"
-  column), because the pump counter is read the next morning. A day nobody
-  filled in stays a row; the stock after it shows "—" rather than a wrong
-  number, and today's screen lists the gaps.
+- **The morning stock is typed, the volume sold is derived.** Each morning
+  the gauge reading goes in `fixStock`; D's volume sold is D's stock + D's
+  deliveries − D+1's stock. `fixPmp` is optional beside it (start, or a PMP
+  correction), otherwise the PMP carries over. A missed morning costs that
+  day's volume and margin only — the next reading restarts the chain. The
+  sold volume therefore absorbs gauge error, thermal expansion and
+  evaporation: daily margins are noisier than with the pump counter.
+- **Legacy `fuelDays.sold`** (the counter, typed on D+1's screen before the
+  gauge workflow) still wins over the derived volume, so old days keep their
+  numbers without a migration. Typing D+1's stock clears D's `sold` in the
+  same mutation; there is no mutation to write `sold` anymore.
+- **A morning stock above yesterday's available is refused**
+  (`stock_exceeds_available`): it means a forgotten delivery. If a later edit
+  makes a derived volume negative anyway, the row is flagged `negativeSold`
+  and kept out of the margin totals.
 - **Tests live in `tests/`, not next to the code.** `convex/tsconfig.json`
   has no `allowImportingTsExtensions`, which `node --test` needs; the Convex
   bundler would skip a `fuel.test.ts` (several dots) anyway.
