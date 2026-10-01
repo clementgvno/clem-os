@@ -5,6 +5,10 @@
   "subtitle": "Les dernières améliorations de l'application.",
   "seeAll": "Voir toutes les nouveautés",
   "entries": {
+    "fuel-morning-stock": {
+      "title": "Carburant : saisie du stock du matin",
+      "body": "Chaque matin, tapez le stock lu à la jauge : le volume vendu la veille et sa marge se calculent tout seuls. Un matin oublié ne bloque plus les jours suivants, et les jours déjà saisis restent inchangés."
+    },
     "fuel-margin": {
       "title": "Suivi de marge carburant",
       "body": "Une nouvelle page Carburant suit chaque jour, par produit, le stock, le prix moyen pondéré après livraison et votre marge au prix pompe. Le bouton « Coûtant » donne le prix TTC sans perte, le récap du mois s'exporte en Excel, et corriger un jour passé met à jour tous les jours suivants."

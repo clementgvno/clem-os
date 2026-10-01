@@ -126,29 +126,6 @@ export const list = query({
   },
 })
 
-/** Volume sold that day, read on the pump counter. `null` clears it. */
-export const setSold = mutation({
-  args: { ...dayArgs, sold: v.union(v.number(), v.null()) },
-  handler: async (ctx, { sold, ...key }) => {
-    const { user } = await requireOrgMember(ctx, key.orgId)
-    await requireOrgModule(ctx, key.orgId, 'fuel')
-    checkDate(key.date)
-    const history = await loadHistory(ctx, key)
-    const row = requireRow(history, key.date)
-    if (sold !== null) {
-      checkInt(sold, 0, FUEL_LIMITS.maxLiters)
-      if (row.available !== null && sold > row.available) {
-        throw new ConvexError('sold_exceeds_stock')
-      }
-    }
-    await writeDay(ctx, key, history, user._id, (day) => ({
-      ...day,
-      sold: sold ?? undefined,
-    }))
-    return null
-  },
-})
-
 /** Pump price incl. VAT from that day on. `null` goes back to the previous day's. */
 export const setPrice = mutation({
   args: { ...dayArgs, price: v.union(v.number(), v.null()) },
@@ -215,39 +192,65 @@ export const removeDelivery = mutation({
   },
 })
 
-/** Starting stock, or a correction after a tank dip: stock and PMP this morning. */
+/**
+ * Stock read on the tank gauge this morning; it settles the day before's
+ * volume sold. With `pmp`: the starting stock, or a PMP correction. `null`
+ * clears the reading (and its PMP), except on the starting day.
+ */
 export const setStock = mutation({
-  args: { ...dayArgs, stock: v.number(), pmp: v.number() },
+  args: {
+    ...dayArgs,
+    stock: v.union(v.number(), v.null()),
+    pmp: v.optional(v.number()),
+  },
   handler: async (ctx, { stock, pmp, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
     await requireOrgModule(ctx, key.orgId, 'fuel')
     checkDate(key.date)
-    checkInt(stock, 0, FUEL_LIMITS.maxLiters)
-    checkInt(pmp, FUEL_LIMITS.minUnitPrice, FUEL_LIMITS.maxUnitPrice)
     const history = await loadHistory(ctx, key)
+
+    if (stock === null) {
+      const start = history.find(
+        (d) => d.fixStock !== undefined && d.fixPmp !== undefined,
+      )
+      if (start?.date === key.date) throw new ConvexError('cannot_clear_start')
+      await writeDay(ctx, key, history, user._id, (day) => ({
+        ...day,
+        fixStock: undefined,
+        fixPmp: undefined,
+      }))
+      return null
+    }
+
+    checkInt(stock, 0, FUEL_LIMITS.maxLiters)
+    if (pmp !== undefined) {
+      checkInt(pmp, FUEL_LIMITS.minUnitPrice, FUEL_LIMITS.maxUnitPrice)
+    } else {
+      requireRow(history, key.date)
+    }
+    const yesterday = addDays(key.date, -1)
+    const yRow = computeLedger(history.map(toEntry), key.date).find(
+      (r) => r.date === yesterday,
+    )
+    if (yRow?.available != null && stock > yRow.available) {
+      throw new ConvexError('stock_exceeds_available')
+    }
+
     await writeDay(ctx, key, history, user._id, (day) => ({
       ...day,
       fixStock: stock,
-      fixPmp: pmp,
+      fixPmp: pmp ?? day.fixPmp,
     }))
-    return null
-  },
-})
-
-/** Drops a correction so the stock is computed again. The starting stock stays. */
-export const clearStock = mutation({
-  args: dayArgs,
-  handler: async (ctx, key) => {
-    const { user } = await requireOrgMember(ctx, key.orgId)
-    await requireOrgModule(ctx, key.orgId, 'fuel')
-    const history = await loadHistory(ctx, key)
-    const start = history.find((d) => d.fixStock !== undefined)
-    if (start?.date === key.date) throw new ConvexError('cannot_clear_start')
-    await writeDay(ctx, key, history, user._id, (day) => ({
-      ...day,
-      fixStock: undefined,
-      fixPmp: undefined,
-    }))
+    // A volume typed on the pump counter (legacy) would hide the derived one.
+    if (history.find((d) => d.date === yesterday)?.sold !== undefined) {
+      await writeDay(
+        ctx,
+        { ...key, date: yesterday },
+        history,
+        user._id,
+        (day) => ({ ...day, sold: undefined }),
+      )
+    }
     return null
   },
 })

@@ -35,18 +35,19 @@
   },
   "stock": {
     "at": "à {{pmp}} €",
-    "fix": "Corriger",
-    "fixed": "corrigé",
-    "backToComputed": "Revenir au calcul",
-    "missing": "Vendu du {{day}} manquant",
+    "fixPmp": "Corriger le PMP",
+    "pmpFixed": "PMP corrigé",
     "negative": "Stock négatif"
+  },
+  "sold": {
+    "negative": "Négatif, à vérifier"
   },
   "placeholders": {
     "liters": "Litres",
     "purchase": "Prix HT",
     "pmp": "PMP HT",
     "pump": "TTC",
-    "counter": "Compteur"
+    "gauge": "Jauge"
   },
   "delivery": {
     "add": "+ Livraison",
@@ -64,7 +65,7 @@
     "perLiter": "€/L",
     "belowCost": "Sous le PMP"
   },
-  "missingBanner": "Vendu manquant",
+  "missingBanner": "Stock manquant",
   "dayTotals": {
     "sold": "Vendu {{day}}",
     "margin": "Marge {{day}}",
@@ -104,11 +105,11 @@
     "integer": "Litres entiers",
     "range": "Entre {{min}} et {{max}}",
     "required": "Obligatoire",
-    "soldExceeds": "Stock dispo : {{liters}} L"
+    "stockExceeds": "Dispo hier : {{liters}} L"
   },
   "errors": {
     "not_started": "Saisissez d'abord le stock de départ",
-    "sold_exceeds_stock": "Plus que le stock disponible : corrigez le stock d'abord",
+    "stock_exceeds_available": "Plus que le stock dispo hier : ajoutez d'abord la livraison manquante",
     "invalid_value": "Valeur refusée",
     "invalid_date": "Date invalide",
     "stale": "Cette ligne a changé entre-temps, réessayez",

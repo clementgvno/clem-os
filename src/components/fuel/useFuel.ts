@@ -43,12 +43,10 @@ export function useFuelData(
 /** Mutations wrapped with a translated error toast; they still reject on error. */
 export function useFuelActions(orgId: Id<'organizations'>) {
   const { t } = useTranslation('fuel')
-  const setSold = useConvexMutation(api.fuel.setSold)
   const setPrice = useConvexMutation(api.fuel.setPrice)
   const addDelivery = useConvexMutation(api.fuel.addDelivery)
   const removeDelivery = useConvexMutation(api.fuel.removeDelivery)
   const setStock = useConvexMutation(api.fuel.setStock)
-  const clearStock = useConvexMutation(api.fuel.clearStock)
 
   const run = useCallback(
     async (promise: Promise<unknown>) => {
@@ -70,8 +68,6 @@ export function useFuelActions(orgId: Id<'organizations'>) {
       date,
     })
     return {
-      setSold: (product: FuelProduct, date: string, sold: number | null) =>
-        run(setSold({ ...day(product, date), sold })),
       setPrice: (product: FuelProduct, date: string, price: number | null) =>
         run(setPrice({ ...day(product, date), price })),
       addDelivery: (
@@ -87,25 +83,15 @@ export function useFuelActions(orgId: Id<'organizations'>) {
         liters: number,
         price: number,
       ) => run(removeDelivery({ ...day(product, date), index, liters, price })),
+      /** Morning stock; with `pmp`, the starting stock or a PMP correction. */
       setStock: (
         product: FuelProduct,
         date: string,
-        stock: number,
-        pmp: number,
+        stock: number | null,
+        pmp?: number,
       ) => run(setStock({ ...day(product, date), stock, pmp })),
-      clearStock: (product: FuelProduct, date: string) =>
-        run(clearStock(day(product, date))),
     }
-  }, [
-    orgId,
-    run,
-    setSold,
-    setPrice,
-    addDelivery,
-    removeDelivery,
-    setStock,
-    clearStock,
-  ])
+  }, [orgId, run, setPrice, addDelivery, removeDelivery, setStock])
 }
 
 export type FuelActions = ReturnType<typeof useFuelActions>

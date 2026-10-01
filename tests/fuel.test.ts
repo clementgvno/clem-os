@@ -218,6 +218,86 @@ describe('ledger', () => {
     )
   })
 
+  describe('morning stock read on the gauge', () => {
+    // Day 1: 10 000 L at 1.4000, 20 000 L delivered at 1.4300 (PMP 1.4200),
+    // pump 1.749. Day 2 morning: 25 000 L in the tank → 5 000 L sold on day 1.
+    const gauge: Array<FuelEntry> = [
+      {
+        date: '2026-09-01',
+        fixStock: 10_000,
+        fixPmp: 14_000,
+        deliveries: [{ liters: 20_000, price: 14_300 }],
+        price: 1_749,
+      },
+      { date: '2026-09-02', fixStock: 25_000, deliveries: [] },
+    ]
+
+    test("the volume sold is derived from the next morning's stock", () => {
+      const [d1, d2] = computeLedger(gauge, '2026-09-02')
+      assert.equal(d1.sold, 5_000) // 10 000 + 20 000 − 25 000
+      assert.equal(d1.marginCents, 18_750) // 0.0375 × 5 000
+      assert.equal(d1.closeStock, 25_000)
+      assert.ok(!d1.negativeSold)
+      assert.ok(d2.fixed)
+      assert.equal(d2.openStock, 25_000)
+      assert.equal(d2.sold, null) // day 3 not read yet
+    })
+
+    test('a stock typed without a PMP carries the PMP over', () => {
+      const [, d2] = computeLedger(gauge, '2026-09-02')
+      assert.equal(d2.openPmp, 14_200)
+      assert.equal(d2.pmp, 14_200)
+      assert.equal(d2.margin, 375)
+    })
+
+    test('a typed volume sold (legacy) wins over the derived one', () => {
+      const legacy = [{ ...gauge[0], sold: 4_000 }, gauge[1]]
+      const [d1] = computeLedger(legacy, '2026-09-02')
+      assert.equal(d1.sold, 4_000)
+    })
+
+    test('a missed morning costs one day, not the rest of the chain', () => {
+      const rows = computeLedger(
+        [
+          ...gauge,
+          // 3rd: nobody read the gauge. 4th: 20 000 L.
+          { date: '2026-09-04', fixStock: 20_000, deliveries: [] },
+          { date: '2026-09-05', fixStock: 18_000, deliveries: [] },
+        ],
+        '2026-09-05',
+      )
+      const [, d2, d3, d4] = rows
+      assert.equal(d2.sold, null) // no reading on the 3rd
+      assert.equal(d3.openStock, null)
+      assert.equal(d3.sold, null)
+      assert.equal(d4.openStock, 20_000)
+      assert.equal(d4.pmp, 14_200) // no delivery in the gap: PMP survives
+      assert.equal(d4.sold, 2_000)
+      assert.equal(d4.marginCents, 7_500) // 0.0375 × 2 000
+    })
+
+    test('a negative volume sold is flagged and kept out of the totals', () => {
+      const rows = computeLedger(
+        [gauge[0], { date: '2026-09-02', fixStock: 31_000, deliveries: [] }],
+        '2026-09-02',
+      )
+      assert.equal(rows[0].sold, -1_000)
+      assert.ok(rows[0].negativeSold)
+      assert.equal(rows[0].marginCents, null)
+      assert.equal(summarize(rows).sold, 0)
+    })
+
+    test('a stock without a PMP cannot start the ledger', () => {
+      assert.deepEqual(
+        computeLedger(
+          [{ date: '2026-09-01', fixStock: 1_000, deliveries: [] }],
+          '2026-09-01',
+        ),
+        [],
+      )
+    })
+  })
+
   test('monthly totals are weighted by volume, not averaged', () => {
     const rows = computeLedger(
       [

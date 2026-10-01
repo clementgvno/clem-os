@@ -189,12 +189,12 @@ Prerequisite: the Items tool is enabled on Acme (`/app/admin`, cf. SA6).
 | F2 | SP98: 10 000 L at 1,4000 → OK, then a delivery of 20 000 L at 1,4300 | PMP 1,4200, ▲ 0,0200 under it                              |
 | F3 | Pump price 1,749                                             | Margin +0,0375 €/L · 2,6 %                                        |
 | F4 | Click "Cost …"                                               | Price becomes 1,704 (1,42 × 1,2 rounded up), margin 0,0000, button filled |
-| F5 | Next day → "Sold <yesterday>" = 5 000                        | Morning stock 25 000 L at 1,4200 · yesterday's margin in € under the field; price carried (dashed) |
-| F6 | Sold > available stock                                       | Field error "In stock: … L", nothing saved                        |
+| F5 | Next day → morning stock = 25 000                            | "Sold <yesterday>" 5 000 L, yesterday's margin in € under it; PMP 1,4200 carried; price carried (dashed) |
+| F6 | Morning stock > yesterday's available (31 000)               | Field error "Available yesterday: … L", nothing saved            |
 | F7 | 5 decimals in a price, letters, "12,5" liters                | Field error, value kept, Escape restores the saved one            |
-| F8 | Leave a day's volume empty, open today                       | Orange "Sales missing" banner; the product's stock shows "—" and a link to the right day |
+| F8 | Skip a morning's stock, type the next one, open today        | Orange "Missing stock" banner links to the skipped day; the day before it shows sold "—"; the next day's sold and margin are back |
 | F9 | Change a past delivery price                                 | PMP and margins of every later day update (month view)            |
-| F10 | "Correct" → new liters/PMP → OK, then "Back to computed"    | Tag "corrected", chain restarts from it; removing it restores the computed stock |
+| F10 | "Correct PMP" → new liters/PMP → OK                       | Tag "PMP corrected", later days carry the new PMP; clearing the stock field on a later day removes both |
 | F11 | Month view → expand a product → "Export to Excel"           | Totals weighted by volume; `.xlsx` with a summary sheet + one sheet per product, numbers as numbers; "Entered by" shows each day's author |
 | F12 | Second member of the org, second browser                    | Sees the same data live; a non-member gets `not_a_member`        |
 | F13 | Untick "Fuel" on the org in `/app/admin`                  | Fuel leaves the sidebar; `/app/<org>/fuel` redirects to `/app/<org>`; `fuel.*` throw `module_disabled` |
