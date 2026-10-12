@@ -14,8 +14,8 @@
         "references/websockets.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "e0db938ca1dfd9f7525e08c0264c019707e034e2",
-      "computedHash": "3c8a83c793c81c3ee3b736ada011e18b51834a8a04d370a049cabb7764dcc4d7"
+      "pinnedRef": "cde357ff31d46c7aeb34c3a1994cf5dd4b84475d",
+      "computedHash": "deab91b5c6248a601a60ab2454795762403dcd3d75ab2cd723bc580be82438f3"
     },
     "better-auth-best-practices": {
       "source": "better-auth/skills",
@@ -44,7 +44,7 @@
         "references/packaged-components.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "0aa10576821c6928f6a0f498c087af4ee231536e",
+      "pinnedRef": "2cfe645c87f971242cfc8ef3eb53662cbec26a53",
       "computedHash": "384ff94842bd6041e78aff2cd1563eef8f1384a56bf9b1bfc3ee572357a17253"
     },
     "create-auth-skill": {
@@ -68,7 +68,7 @@
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
       "trackingRef": "main",
-      "pinnedRef": "34040c9c568585f6929bedeaad110ad08f079624",
+      "pinnedRef": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
       "computedHash": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
     },
     "organization-best-practices": {
@@ -84,7 +84,7 @@
       "sourceType": "github",
       "skillPath": "packages/react-router/skills/react-router/SKILL.md",
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
+      "pinnedRef": "57bd1a92f9839af5bf773c3b36d039569fb1a41e",
       "computedHash": "9a08a0e3e647b59213577c846f1516f3070f4759738f1ed3d68afd25fad28d82"
     },
     "tanstack-react-start": {
@@ -107,8 +107,8 @@
         "server-components/examples/06-low-level-flight-api-route.tsx"
       ],
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "73fc17cc4497b3e21b3d6c6d8dead26bb1e0b601c72c5568a60b775c6063010e"
+      "pinnedRef": "57bd1a92f9839af5bf773c3b36d039569fb1a41e",
+      "computedHash": "ff259b192d556eb407015a3fd7b94673c7474d79977323ccaa2a14238b5a96a0"
     },
     "tanstack-router-core": {
       "source": "TanStack/router",
@@ -127,16 +127,16 @@
         "type-safety/SKILL.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "ba3dc3d59471d665a7d0361e77055004948204b73e31841e5eed2328c58ac441"
+      "pinnedRef": "57bd1a92f9839af5bf773c3b36d039569fb1a41e",
+      "computedHash": "56260e5c1922d008562157b2bc34ed8685ecfdf869801c4b1155802d94ff79e0"
     },
     "tanstack-router-query": {
       "source": "TanStack/router",
       "sourceType": "github",
       "skillPath": "packages/react-router/skills/compositions/router-query/SKILL.md",
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "83b8c66d29a36df2a174643566570e602fc232c2daf7fab020c26ab7d06e80ae"
+      "pinnedRef": "57bd1a92f9839af5bf773c3b36d039569fb1a41e",
+      "computedHash": "50f85ec86be049d166b8bc4d9c5883e7b7720c4952d6eef92616319f3cf3dcd0"
     },
     "tanstack-start-core": {
       "source": "TanStack/router",
@@ -151,7 +151,7 @@
         "server-routes/SKILL.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
+      "pinnedRef": "57bd1a92f9839af5bf773c3b36d039569fb1a41e",
       "computedHash": "57116f0c57e2a687b9e3f0f5071f5cb86c3d5f86cf13b5845267be54de1de514"
     },
     "two-factor-authentication-best-practices": {
@@ -172,8 +172,8 @@
         "license": "MIT"
       },
       "trackingRef": "main",
-      "pinnedRef": "e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
-      "computedHash": "cc844425b881a666c4cf783d5a153bc88760c37f7977119c0e8b2941fcbc606c"
+      "pinnedRef": "434b7f91364665f2f733b310ec54809bf8f37937",
+      "computedHash": "e82cab0ddd3640b0bb0c0bc0f4014b9aeccb3aa5817acace226cd419d3287c69"
     }
   }
 }
