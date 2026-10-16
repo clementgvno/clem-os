@@ -241,7 +241,7 @@ export const setStock = mutation({
       fixStock: stock,
       fixPmp: pmp ?? day.fixPmp,
     }))
-    // A volume typed on the pump counter (legacy) would hide the derived one.
+    // A volume typed on the pump counter would hide the derived one.
     if (history.find((d) => d.date === yesterday)?.sold !== undefined) {
       await writeDay(
         ctx,
@@ -251,6 +251,48 @@ export const setStock = mutation({
         (day) => ({ ...day, sold: undefined }),
       )
     }
+    return null
+  },
+})
+
+/**
+ * Volume sold that day, read on the pump counter: the alternative to the next
+ * morning's gauge reading. One fact settles each day-to-day boundary, so this
+ * clears the next morning's reading (its stock is then computed), exactly as
+ * `setStock` clears the day before's volume. `null` clears the volume.
+ */
+export const setSold = mutation({
+  args: { ...dayArgs, sold: v.union(v.number(), v.null()) },
+  handler: async (ctx, { sold, ...key }) => {
+    const { user } = await requireOrgMember(ctx, key.orgId)
+    await requireOrgModule(ctx, key.orgId, 'fuel')
+    checkDate(key.date)
+    const history = await loadHistory(ctx, key)
+    const row = requireRow(history, key.date)
+
+    if (sold !== null) {
+      checkInt(sold, 0, FUEL_LIMITS.maxLiters)
+      if (row.available !== null && sold > row.available) {
+        throw new ConvexError('sold_exceeds_available')
+      }
+    }
+    const tomorrow = addDays(key.date, 1)
+    const next = history.find((d) => d.date === tomorrow)
+    if (sold !== null && next?.fixStock !== undefined) {
+      // A PMP correction rides on that reading: dropping it would lose it.
+      if (next.fixPmp !== undefined) throw new ConvexError('next_pmp_fixed')
+      await writeDay(
+        ctx,
+        { ...key, date: tomorrow },
+        history,
+        user._id,
+        (day) => ({ ...day, fixStock: undefined }),
+      )
+    }
+    await writeDay(ctx, key, history, user._id, (day) => ({
+      ...day,
+      sold: sold ?? undefined,
+    }))
     return null
   },
 })

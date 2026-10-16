@@ -5,6 +5,10 @@
   "subtitle": "The latest improvements to the app.",
   "seeAll": "See all updates",
   "entries": {
+    "fuel-sales-entry": {
+      "title": "Fuel: enter sales instead of stock",
+      "body": "A switch on the day screen lets you type either the stock read on the gauge or yesterday's sales read on the pump counter. Switch whenever you like depending on the figures you have: stock, average cost and margins stay right either way."
+    },
     "fuel-morning-stock": {
       "title": "Fuel: enter the morning stock",
       "body": "Each morning, type the stock read on the tank gauge: yesterday's volume sold and its margin are worked out for you. A missed morning no longer blocks the days after it, and the days already entered stay as they were."

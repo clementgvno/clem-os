@@ -195,6 +195,8 @@ Prerequisite: the Items tool is enabled on Acme (`/app/admin`, cf. SA6).
 | F8 | Skip a morning's stock, type the next one, open today        | Orange "Missing stock" banner links to the skipped day; the day before it shows sold "—"; the next day's sold and margin are back |
 | F9 | Change a past delivery price                                 | PMP and margins of every later day update (month view)            |
 | F10 | "Correct PMP" → new liters/PMP → OK                       | Tag "PMP corrected", later days carry the new PMP; clearing the stock field on a later day removes both |
+| F10b | Switch "Morning entry" to "Sales <yesterday>", type yesterday's volume 4 000 | Morning stock becomes read-only, recomputed (available − 4 000); yesterday's margin follows; the switch survives a reload |
+| F10c | Sales mode: a volume above yesterday's available; then switch back to "Gauge stock" and retype the morning stock | Field error "Available yesterday: … L", nothing saved; the retyped stock replaces the typed volume (sold derived again), no figure lost on later days |
 | F11 | Month view → expand a product → "Export to Excel"           | Totals weighted by volume; `.xlsx` with a summary sheet + one sheet per product, numbers as numbers; "Entered by" shows each day's author |
 | F12 | Second member of the org, second browser                    | Sees the same data live; a non-member gets `not_a_member`        |
 | F13 | Untick "Fuel" on the org in `/app/admin`                  | Fuel leaves the sidebar; `/app/<org>/fuel` redirects to `/app/<org>`; `fuel.*` throw `module_disabled` |

@@ -250,10 +250,41 @@ describe('ledger', () => {
       assert.equal(d2.margin, 375)
     })
 
-    test('a typed volume sold (legacy) wins over the derived one', () => {
-      const legacy = [{ ...gauge[0], sold: 4_000 }, gauge[1]]
-      const [d1] = computeLedger(legacy, '2026-09-02')
+    test('a typed volume sold wins over the derived one', () => {
+      const typed = [{ ...gauge[0], sold: 4_000 }, gauge[1]]
+      const [d1] = computeLedger(typed, '2026-09-02')
       assert.equal(d1.sold, 4_000)
+    })
+
+    test('stock and sales modes can alternate day by day', () => {
+      const rows = computeLedger(
+        [
+          gauge[0],
+          // 1st → 2nd: gauge (25 000 on the 2nd morning).
+          // 2nd → 3rd: pump counter, 3 000 L sold on the 2nd.
+          { ...gauge[1], sold: 3_000 },
+          // 3rd: a delivery; 3rd → 4th: gauge again.
+          {
+            date: '2026-09-03',
+            deliveries: [{ liters: 8_000, price: 15_000 }],
+          },
+          { date: '2026-09-04', fixStock: 24_000, deliveries: [] },
+        ],
+        '2026-09-04',
+      )
+      const [d1, d2, d3, d4] = rows
+      assert.equal(d1.sold, 5_000) // derived from the 2nd's gauge
+      assert.equal(d2.sold, 3_000) // typed
+      assert.equal(d2.closeStock, 22_000)
+      assert.equal(d3.openStock, 22_000) // computed from the typed volume
+      assert.ok(!d3.fixed)
+      // PMP = (22 000 × 1.4200 + 8 000 × 1.5000) / 30 000 = 1.441333… → 1.4413
+      assert.equal(d3.pmp, 14_413)
+      assert.equal(d3.sold, 6_000) // 22 000 + 8 000 − 24 000
+      assert.equal(d4.openStock, 24_000)
+      assert.equal(d4.pmp, 14_413)
+      // Every day's volume is known, so the totals cover all three.
+      assert.equal(summarize(rows).sold, 14_000)
     })
 
     test('a missed morning costs one day, not the rest of the chain', () => {

@@ -981,10 +981,17 @@ exception to "never edit `convex/_generated/*`" — say so in the PR.
   day's volume and margin only — the next reading restarts the chain. The
   sold volume therefore absorbs gauge error, thermal expansion and
   evaporation: daily margins are noisier than with the pump counter.
-- **Legacy `fuelDays.sold`** (the counter, typed on D+1's screen before the
-  gauge workflow) still wins over the derived volume, so old days keep their
-  numbers without a migration. Typing D+1's stock clears D's `sold` in the
-  same mutation; there is no mutation to write `sold` anymore.
+- **…or the volume sold is typed, the stock derived.** The day screen has a
+  "Gauge stock / Sales" switch for mornings when only the pump counter is at
+  hand: `setSold` writes D's `fuelDays.sold`, and D+1 opens at D's available
+  − sold. The switch is a per-browser display choice (localStorage), never
+  stored: the engine reads whatever mix was typed. **One fact per day-to-day
+  boundary**: if D's `sold` and D+1's `fixStock` both existed, `sold` would
+  win for D's margin and the gauge would silently reopen D+1 — the gap
+  between counter and gauge would vanish from every total. So each mutation
+  clears the other fact: `setStock` clears the day before's `sold`, `setSold`
+  clears the next morning's `fixStock`, and refuses (`next_pmp_fixed`) when
+  that reading carries a PMP correction rather than drop it.
 - **A morning stock above yesterday's available is refused**
   (`stock_exceeds_available`): it means a forgotten delivery. If a later edit
   makes a derived volume negative anyway, the row is flagged `negativeSold`
