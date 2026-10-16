@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { X } from 'lucide-react'
@@ -16,6 +16,7 @@ import { signClass, useFormatters } from './format'
 import type { ReactNode } from 'react'
 import type { FuelActions, FuelData } from './useFuel'
 import type { FuelProduct, FuelRow } from '../../../convex/lib/fuel'
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { cn } from '~/lib/utils'
 
 // One grid for the header and every row, so columns line up. Wide enough
@@ -36,6 +37,35 @@ const SUB =
 const LINK =
   'text-muted-foreground hover:text-foreground border-b border-dashed border-current text-xs'
 
+/**
+ * What the morning screen asks for: the stock read on the gauge (yesterday's
+ * volume sold is derived) or yesterday's volume read on the pump counter (the
+ * stock is derived). Only changes which field is editable — both are stored as
+ * typed and the engine handles any mix, so switching never alters a number.
+ */
+type EntryMode = 'stock' | 'sales'
+const MODE_KEY = 'fuel.entryMode'
+
+function useEntryMode() {
+  const [mode, setMode] = useState<EntryMode>('stock')
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(MODE_KEY) === 'sales') setMode('sales')
+    } catch {
+      // Storage blocked: stay on the default.
+    }
+  }, [])
+  const change = (next: EntryMode) => {
+    setMode(next)
+    try {
+      localStorage.setItem(MODE_KEY, next)
+    } catch {
+      // Storage blocked: the choice lasts until the page reloads.
+    }
+  }
+  return [mode, change] as const
+}
+
 type Props = {
   date: string
   today: string
@@ -48,6 +78,7 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
   const { t } = useTranslation('fuel')
   const fmt = useFormatters()
   const yesterday = addDays(date, -1)
+  const [mode, setMode] = useEntryMode()
 
   const products = FUEL_PRODUCTS.map((product) => {
     const ledger = data.ledgers.get(product) ?? []
@@ -61,7 +92,8 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
   const started = products.some((p) => p.ledger.length > 0)
 
   // Past mornings whose stock is still unknown (only on today's screen:
-  // today's is the field right there).
+  // today's is the field right there). Either fact fills the gap: that
+  // morning's stock, or the day before's volume sold.
   const missing = new Map<string, Array<FuelProduct>>()
   if (date === today) {
     for (const { product, ledger } of products) {
@@ -93,7 +125,9 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
       )}
       {missingList.length > 0 && (
         <div className="bg-warning-muted text-warning flex flex-wrap items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium">
-          <span>{t('missingBanner')}</span>
+          <span>
+            {t(mode === 'sales' ? 'missingSalesBanner' : 'missingBanner')}
+          </span>
           {missingList.slice(0, 6).map(([d, ps]) => (
             <button
               key={d}
@@ -101,10 +135,31 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
               onClick={() => onGoto(d)}
               className="bg-background text-foreground hover:bg-accent rounded-full px-2.5 py-0.5 text-xs"
             >
-              {fmt.shortDay(d)} · {ps.map((p) => t(`products.${p}`)).join(', ')}
+              {/* In sales mode the gap is the day before's volume, typed on this morning's screen. */}
+              {fmt.shortDay(mode === 'sales' ? addDays(d, -1) : d)} ·{' '}
+              {ps.map((p) => t(`products.${p}`)).join(', ')}
             </button>
           ))}
           {missingList.length > 6 && <span>+{missingList.length - 6}</span>}
+        </div>
+      )}
+
+      {started && (
+        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
+          <span className="text-muted-foreground text-sm">
+            {t('mode.label')}
+          </span>
+          <Tabs
+            value={mode}
+            onValueChange={(v) => setMode(v === 'sales' ? 'sales' : 'stock')}
+          >
+            <TabsList aria-label={t('mode.label')}>
+              <TabsTrigger value="stock">{t('mode.stock')}</TabsTrigger>
+              <TabsTrigger value="sales">
+                {t('mode.sales', { day: fmt.shortDay(yesterday) })}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       )}
 
@@ -137,6 +192,7 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
               yRow={p.yRow}
               date={date}
               yesterday={yesterday}
+              mode={mode}
               actions={actions}
             />
           ))}
@@ -183,6 +239,7 @@ function DayRow({
   yRow,
   date,
   yesterday,
+  mode,
   actions,
 }: {
   product: FuelProduct
@@ -191,6 +248,7 @@ function DayRow({
   yRow: FuelRow | null
   date: string
   yesterday: string
+  mode: EntryMode
   actions: FuelActions
 }) {
   const { t } = useTranslation('fuel')
@@ -234,30 +292,51 @@ function DayRow({
   } else {
     stockCell = (
       <>
-        <NumberField
-          id={id('stock')}
-          label={`${name} · ${t('columns.stock')}`}
-          value={row.openStock !== null ? fmt.inputLiters(row.openStock) : ''}
-          unit="L"
-          decimals={0}
-          placeholder={t('placeholders.gauge')}
-          tone={
-            row.fixed
-              ? 'default'
-              : row.openStock !== null
-                ? 'carried'
-                : 'missing'
-          }
-          validate={(v) =>
-            checks.liters(v) ??
-            (yRow?.available != null && v > yRow.available
-              ? t('validation.stockExceeds', {
-                  liters: fmt.liters(yRow.available),
-                })
-              : null)
-          }
-          onCommit={(v) => actions.setStock(product, date, v)}
-        />
+        {mode === 'sales' ? (
+          <div
+            className={cn(
+              BIG,
+              '@min-[60rem]:justify-end',
+              row.openStock === null && 'text-muted-foreground',
+            )}
+          >
+            {row.openStock !== null ? (
+              <>
+                {fmt.liters(row.openStock)}
+                <span className="text-muted-foreground ml-1 text-xs font-normal">
+                  L
+                </span>
+              </>
+            ) : (
+              '—'
+            )}
+          </div>
+        ) : (
+          <NumberField
+            id={id('stock')}
+            label={`${name} · ${t('columns.stock')}`}
+            value={row.openStock !== null ? fmt.inputLiters(row.openStock) : ''}
+            unit="L"
+            decimals={0}
+            placeholder={t('placeholders.gauge')}
+            tone={
+              row.fixed
+                ? 'default'
+                : row.openStock !== null
+                  ? 'carried'
+                  : 'missing'
+            }
+            validate={(v) =>
+              checks.liters(v) ??
+              (yRow?.available != null && v > yRow.available
+                ? t('validation.stockExceeds', {
+                    liters: fmt.liters(yRow.available),
+                  })
+                : null)
+            }
+            onCommit={(v) => actions.setStock(product, date, v)}
+          />
+        )}
         <div className={cn(SUB, '@min-[60rem]:justify-end')}>
           {row.negativeStock ? (
             <span className="text-destructive">{t('stock.negative')}</span>
@@ -374,25 +453,52 @@ function DayRow({
         <div className={LABEL}>
           {t('columns.soldOn', { day: fmt.shortDay(yesterday) })}
         </div>
-        <div
-          className={cn(
-            BIG,
-            '@min-[60rem]:justify-end',
-            yRow?.sold == null && 'text-muted-foreground',
-            yRow?.negativeSold && 'text-destructive',
-          )}
-        >
-          {yRow?.sold != null ? (
-            <>
-              {fmt.liters(yRow.sold)}
-              <span className="text-muted-foreground ml-1 text-xs font-normal">
-                L
-              </span>
-            </>
-          ) : (
-            '—'
-          )}
-        </div>
+        {mode === 'sales' && yRow ? (
+          <NumberField
+            id={id('sold')}
+            label={`${name} · ${t('columns.soldOn', { day: fmt.shortDay(yesterday) })}`}
+            value={yRow.sold !== null ? fmt.inputLiters(yRow.sold) : ''}
+            unit="L"
+            decimals={0}
+            placeholder={t('placeholders.counter')}
+            tone={
+              yRow.entry?.sold !== undefined
+                ? 'default'
+                : yRow.sold !== null
+                  ? 'carried'
+                  : 'missing'
+            }
+            validate={(v) =>
+              checks.liters(v) ??
+              (yRow.available !== null && v > yRow.available
+                ? t('validation.stockExceeds', {
+                    liters: fmt.liters(yRow.available),
+                  })
+                : null)
+            }
+            onCommit={(v) => actions.setSold(product, yesterday, v)}
+          />
+        ) : (
+          <div
+            className={cn(
+              BIG,
+              '@min-[60rem]:justify-end',
+              yRow?.sold == null && 'text-muted-foreground',
+              yRow?.negativeSold && 'text-destructive',
+            )}
+          >
+            {yRow?.sold != null ? (
+              <>
+                {fmt.liters(yRow.sold)}
+                <span className="text-muted-foreground ml-1 text-xs font-normal">
+                  L
+                </span>
+              </>
+            ) : (
+              '—'
+            )}
+          </div>
+        )}
         {yRow?.negativeSold ? (
           <div className={cn(SUB, 'text-destructive @min-[60rem]:justify-end')}>
             {t('sold.negative')}

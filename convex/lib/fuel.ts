@@ -4,11 +4,13 @@
  * numbers. Covered by `tests/fuel.test.ts` (`pnpm test:unit`).
  *
  * Only facts typed by a person are stored (morning stock read on the tank
- * gauge, deliveries, pump price, the starting PMP or a PMP correction).
- * Everything else — volume sold, weighted average cost (PMP), margins — is
- * recomputed here on every read, so correcting a past day propagates to every
- * later day. The volume sold on day D is what left the tank between two
- * readings: D's morning stock + D's deliveries − D+1's morning stock.
+ * gauge or volume sold read on the pump counter, deliveries, pump price, the
+ * starting PMP or a PMP correction). Everything else — weighted average cost
+ * (PMP), margins, whichever of stock / volume was not typed — is recomputed
+ * here on every read, so correcting a past day propagates to every later day.
+ * Each day-to-day boundary is settled by one of two facts: D+1's morning stock
+ * (D's volume sold = D's stock + D's deliveries − D+1's stock), or D's volume
+ * sold (D+1's stock = D's stock + D's deliveries − D's volume sold).
  *
  * Integers only. Units:
  *   liters      integer L
@@ -44,7 +46,7 @@ export type FuelDelivery = { liters: number; price: number }
 
 export type FuelEntry = {
   date: string
-  /** Legacy: volume sold typed on the pump counter. Wins over the derived one. */
+  /** Volume sold read on the pump counter. Wins over the one derived from the next morning's stock. */
   sold?: number
   price?: number
   deliveries: ReadonlyArray<FuelDelivery>
@@ -73,7 +75,7 @@ export type FuelRow = {
   priceHt: number | null
   /** priceHt - pmp, p4 per liter. */
   margin: number | null
-  /** Typed (legacy), or derived from the next morning's stock; null when unknown. */
+  /** Typed (pump counter), or derived from the next morning's stock; null when unknown. */
   sold: number | null
   /** The next morning's stock is above what was available: a reading or a delivery is wrong. */
   negativeSold: boolean

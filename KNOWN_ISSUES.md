@@ -353,7 +353,7 @@ there** — see "pnpm 11 silently drops them" below. Renovate is configured to
 leave all four alone (`renovate.json`, rule "Pinned overrides"), so they only
 ever move by hand.
 
-### `@tanstack/react-router: 1.170.11` + `@tanstack/router-core: 1.171.9`
+### `@tanstack/react-router: 1.170.44` + `@tanstack/router-core: 1.171.37`
 
 Two router-core versions coexisting (one pulled by `react-router`, one by
 `start-client-core`) prevented `server.handlers` from being type-augmented
@@ -362,9 +362,21 @@ on `createFileRoute`. Pinning both to compatible versions resolves it.
 **Unblock when**: TanStack publishes a release where `react-router` and
 `react-start` agree on a single `router-core` version.
 
-### `@tanstack/react-start: 1.168.20`
+### `@tanstack/react-start: 1.169.2`
 
-Pinned in lockstep with the router pin above.
+Pinned in lockstep with the router pin above. **Bump all three together**:
+pick the `react-start` release, then pin `react-router` and `router-core` to
+the exact versions it (and its `start-client-core`) depend on —
+`npm view @tanstack/react-start@<v> dependencies` — and check that
+`pnpm-lock.yaml` holds a single `router-core` afterwards.
+
+Moved off 1.168.20 on 2026-10-16 because **Vercel refuses to build it**:
+the build log stops after cloning with "`@tanstack/react-start@1.168.20`
+contains a known cross-site scripting vulnerability (CVE-2026-102989).
+Update to 1.168.60 or later". The commit status only says "Deployment has
+failed" — the reason is in the Vercel build log, not in GitHub. Since
+1.169, `ErrorComponentProps['error']` is `unknown`, not `Error`: narrow
+it before reading `.message`.
 
 ### `better-call: 1.3.4` — LIFTED 2026-08-24, kept as the cautionary tale
 
@@ -981,10 +993,17 @@ exception to "never edit `convex/_generated/*`" — say so in the PR.
   day's volume and margin only — the next reading restarts the chain. The
   sold volume therefore absorbs gauge error, thermal expansion and
   evaporation: daily margins are noisier than with the pump counter.
-- **Legacy `fuelDays.sold`** (the counter, typed on D+1's screen before the
-  gauge workflow) still wins over the derived volume, so old days keep their
-  numbers without a migration. Typing D+1's stock clears D's `sold` in the
-  same mutation; there is no mutation to write `sold` anymore.
+- **…or the volume sold is typed, the stock derived.** The day screen has a
+  "Gauge stock / Sales" switch for mornings when only the pump counter is at
+  hand: `setSold` writes D's `fuelDays.sold`, and D+1 opens at D's available
+  − sold. The switch is a per-browser display choice (localStorage), never
+  stored: the engine reads whatever mix was typed. **One fact per day-to-day
+  boundary**: if D's `sold` and D+1's `fixStock` both existed, `sold` would
+  win for D's margin and the gauge would silently reopen D+1 — the gap
+  between counter and gauge would vanish from every total. So each mutation
+  clears the other fact: `setStock` clears the day before's `sold`, `setSold`
+  clears the next morning's `fixStock`, and refuses (`next_pmp_fixed`) when
+  that reading carries a PMP correction rather than drop it.
 - **A morning stock above yesterday's available is refused**
   (`stock_exceeds_available`): it means a forgotten delivery. If a later edit
   makes a derived volume negative anyway, the row is flagged `negativeSold`
@@ -1467,3 +1486,19 @@ so the whole tree resolves in six `ls-remote` calls, not sixteen.
 Reviewing the diff is still mandatory — see `CLAUDE.md`, "When the CI job
 `skills-drift` is red". The transport changed, the prompt-injection surface
 did not.
+
+## `tanstack-router-query` teaches `queryClient.query()`, which 5.101 lacks
+
+Since the October 2026 bump, the vendored `tanstack-router-query` skill (and
+the loader examples in `tanstack-router-core` / `tanstack-react-start`)
+replace `ensureQueryData` / `prefetchQuery` with
+`queryClient.query({ ...opts, staleTime: 'static' })`. That method first ships
+in `@tanstack/query-core` **5.102.0**; the lockfile resolves 5.101.0, so code
+copied from the skill fails `pnpm typecheck` with "Property 'query' does not
+exist".
+
+Nothing in `src/` calls either API today. Before writing the first loader
+that does, bump `@tanstack/react-query` to ≥ 5.102 (then follow the skill),
+or stay on `ensureQueryData` and say why in the PR. Either way the
+`CLAUDE.md` rule still holds: never `await` a fire-and-forget query in a
+loader.

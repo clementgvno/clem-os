@@ -47,7 +47,8 @@
     "purchase": "Prix HT",
     "pmp": "PMP HT",
     "pump": "TTC",
-    "gauge": "Jauge"
+    "gauge": "Jauge",
+    "counter": "Compteur"
   },
   "delivery": {
     "add": "+ Livraison",
@@ -65,7 +66,13 @@
     "perLiter": "€/L",
     "belowCost": "Sous le PMP"
   },
+  "mode": {
+    "label": "Saisie du matin",
+    "stock": "Stock jauge",
+    "sales": "Ventes {{day}}"
+  },
   "missingBanner": "Stock manquant",
+  "missingSalesBanner": "Ventes manquantes",
   "dayTotals": {
     "sold": "Vendu {{day}}",
     "margin": "Marge {{day}}",
@@ -116,6 +123,8 @@
     "cannot_clear_start": "Le stock de départ ne peut pas être supprimé, corrigez-le",
     "not_a_member": "Vous n'êtes pas membre de cette organisation",
     "generic": "Enregistrement impossible",
-    "module_disabled": "L'outil Carburant est désactivé pour cette organisation"
+    "module_disabled": "L'outil Carburant est désactivé pour cette organisation",
+    "sold_exceeds_available": "Plus que le stock dispo ce jour-là : ajoutez d'abord la livraison manquante",
+    "next_pmp_fixed": "Le lendemain a un PMP corrigé : modifiez-le en mode Stock jauge"
   }
 }

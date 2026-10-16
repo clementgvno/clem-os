@@ -5,6 +5,14 @@
   "subtitle": "Les dernières améliorations de l'application.",
   "seeAll": "Voir toutes les nouveautés",
   "entries": {
+    "framework-security-update": {
+      "title": "Mise à jour de sécurité",
+      "body": "Nous avons mis à jour le socle technique de l'application pour intégrer un correctif de sécurité publié par son éditeur. Rien à faire de votre côté."
+    },
+    "fuel-sales-entry": {
+      "title": "Carburant : saisir les ventes au lieu du stock",
+      "body": "Un sélecteur sur l'écran du jour permet de taper, au choix, le stock lu à la jauge ou les ventes de la veille lues au compteur. Passez de l'un à l'autre selon les chiffres que vous avez : stock, PMP et marges restent justes dans les deux cas."
+    },
     "fuel-morning-stock": {
       "title": "Carburant : saisie du stock du matin",
       "body": "Chaque matin, tapez le stock lu à la jauge : le volume vendu la veille et sa marge se calculent tout seuls. Un matin oublié ne bloque plus les jours suivants, et les jours déjà saisis restent inchangés."

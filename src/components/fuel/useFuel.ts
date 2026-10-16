@@ -47,6 +47,7 @@ export function useFuelActions(orgId: Id<'organizations'>) {
   const addDelivery = useConvexMutation(api.fuel.addDelivery)
   const removeDelivery = useConvexMutation(api.fuel.removeDelivery)
   const setStock = useConvexMutation(api.fuel.setStock)
+  const setSold = useConvexMutation(api.fuel.setSold)
 
   const run = useCallback(
     async (promise: Promise<unknown>) => {
@@ -90,8 +91,11 @@ export function useFuelActions(orgId: Id<'organizations'>) {
         stock: number | null,
         pmp?: number,
       ) => run(setStock({ ...day(product, date), stock, pmp })),
+      /** Volume sold that day, read on the pump counter. */
+      setSold: (product: FuelProduct, date: string, sold: number | null) =>
+        run(setSold({ ...day(product, date), sold })),
     }
-  }, [orgId, run, setPrice, addDelivery, removeDelivery, setStock])
+  }, [orgId, run, setPrice, addDelivery, removeDelivery, setStock, setSold])
 }
 
 export type FuelActions = ReturnType<typeof useFuelActions>

@@ -47,7 +47,8 @@
     "purchase": "Price excl. VAT",
     "pmp": "Avg. cost",
     "pump": "Incl. VAT",
-    "gauge": "Gauge"
+    "gauge": "Gauge",
+    "counter": "Counter"
   },
   "delivery": {
     "add": "+ Delivery",
@@ -65,7 +66,13 @@
     "perLiter": "€/L",
     "belowCost": "Below cost"
   },
+  "mode": {
+    "label": "Morning entry",
+    "stock": "Gauge stock",
+    "sales": "Sales {{day}}"
+  },
   "missingBanner": "Missing stock",
+  "missingSalesBanner": "Missing sales",
   "dayTotals": {
     "sold": "Sold {{day}}",
     "margin": "Margin {{day}}",
@@ -116,6 +123,8 @@
     "cannot_clear_start": "The starting stock can't be removed, correct it instead",
     "not_a_member": "You are not a member of this organization",
     "generic": "Could not save",
-    "module_disabled": "The Fuel tool is switched off for this organization"
+    "module_disabled": "The Fuel tool is switched off for this organization",
+    "sold_exceeds_available": "More than the stock available that day: add the missing delivery first",
+    "next_pmp_fixed": "The next morning has a corrected avg. cost: change it in Gauge stock mode"
   }
 }
