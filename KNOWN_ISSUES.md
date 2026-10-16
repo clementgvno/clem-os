@@ -353,7 +353,7 @@ there** — see "pnpm 11 silently drops them" below. Renovate is configured to
 leave all four alone (`renovate.json`, rule "Pinned overrides"), so they only
 ever move by hand.
 
-### `@tanstack/react-router: 1.170.11` + `@tanstack/router-core: 1.171.9`
+### `@tanstack/react-router: 1.170.44` + `@tanstack/router-core: 1.171.37`
 
 Two router-core versions coexisting (one pulled by `react-router`, one by
 `start-client-core`) prevented `server.handlers` from being type-augmented
@@ -362,9 +362,21 @@ on `createFileRoute`. Pinning both to compatible versions resolves it.
 **Unblock when**: TanStack publishes a release where `react-router` and
 `react-start` agree on a single `router-core` version.
 
-### `@tanstack/react-start: 1.168.20`
+### `@tanstack/react-start: 1.169.2`
 
-Pinned in lockstep with the router pin above.
+Pinned in lockstep with the router pin above. **Bump all three together**:
+pick the `react-start` release, then pin `react-router` and `router-core` to
+the exact versions it (and its `start-client-core`) depend on —
+`npm view @tanstack/react-start@<v> dependencies` — and check that
+`pnpm-lock.yaml` holds a single `router-core` afterwards.
+
+Moved off 1.168.20 on 2026-10-16 because **Vercel refuses to build it**:
+the build log stops after cloning with "`@tanstack/react-start@1.168.20`
+contains a known cross-site scripting vulnerability (CVE-2026-102989).
+Update to 1.168.60 or later". The commit status only says "Deployment has
+failed" — the reason is in the Vercel build log, not in GitHub. Since
+1.169, `ErrorComponentProps['error']` is `unknown`, not `Error`: narrow
+it before reading `.message`.
 
 ### `better-call: 1.3.4` — LIFTED 2026-08-24, kept as the cautionary tale
 
