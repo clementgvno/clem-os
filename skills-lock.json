@@ -14,8 +14,8 @@
         "references/websockets.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "e0db938ca1dfd9f7525e08c0264c019707e034e2",
-      "computedHash": "3c8a83c793c81c3ee3b736ada011e18b51834a8a04d370a049cabb7764dcc4d7"
+      "pinnedRef": "cde357ff31d46c7aeb34c3a1994cf5dd4b84475d",
+      "computedHash": "deab91b5c6248a601a60ab2454795762403dcd3d75ab2cd723bc580be82438f3"
     },
     "better-auth-best-practices": {
       "source": "better-auth/skills",
@@ -107,8 +107,8 @@
         "server-components/examples/06-low-level-flight-api-route.tsx"
       ],
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "73fc17cc4497b3e21b3d6c6d8dead26bb1e0b601c72c5568a60b775c6063010e"
+      "pinnedRef": "7a0672503857283614799a0b480f4a82110e5ab6",
+      "computedHash": "ff259b192d556eb407015a3fd7b94673c7474d79977323ccaa2a14238b5a96a0"
     },
     "tanstack-router-core": {
       "source": "TanStack/router",
@@ -127,16 +127,16 @@
         "type-safety/SKILL.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "ba3dc3d59471d665a7d0361e77055004948204b73e31841e5eed2328c58ac441"
+      "pinnedRef": "7a0672503857283614799a0b480f4a82110e5ab6",
+      "computedHash": "70bd097ddbf83a20af9982db43a59adef6b1e687ffda1a286458500ea587aaa7"
     },
     "tanstack-router-query": {
       "source": "TanStack/router",
       "sourceType": "github",
       "skillPath": "packages/react-router/skills/compositions/router-query/SKILL.md",
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "83b8c66d29a36df2a174643566570e602fc232c2daf7fab020c26ab7d06e80ae"
+      "pinnedRef": "7a0672503857283614799a0b480f4a82110e5ab6",
+      "computedHash": "50f85ec86be049d166b8bc4d9c5883e7b7720c4952d6eef92616319f3cf3dcd0"
     },
     "tanstack-start-core": {
       "source": "TanStack/router",
@@ -151,8 +151,8 @@
         "server-routes/SKILL.md"
       ],
       "trackingRef": "main",
-      "pinnedRef": "6954a370a76251cf933ede95562c968adc4e847b",
-      "computedHash": "57116f0c57e2a687b9e3f0f5071f5cb86c3d5f86cf13b5845267be54de1de514"
+      "pinnedRef": "7a0672503857283614799a0b480f4a82110e5ab6",
+      "computedHash": "622a29c9092c63edc91d440bc06c8e9ee1ceac617e9231668833ba0ca4c47aae"
     },
     "two-factor-authentication-best-practices": {
       "source": "better-auth/skills",
@@ -172,8 +172,8 @@
         "license": "MIT"
       },
       "trackingRef": "main",
-      "pinnedRef": "e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
-      "computedHash": "cc844425b881a666c4cf783d5a153bc88760c37f7977119c0e8b2941fcbc606c"
+      "pinnedRef": "434b7f91364665f2f733b310ec54809bf8f37937",
+      "computedHash": "e82cab0ddd3640b0bb0c0bc0f4014b9aeccb3aa5817acace226cd419d3287c69"
     }
   }
 }

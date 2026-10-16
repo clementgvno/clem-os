@@ -1474,3 +1474,19 @@ so the whole tree resolves in six `ls-remote` calls, not sixteen.
 Reviewing the diff is still mandatory — see `CLAUDE.md`, "When the CI job
 `skills-drift` is red". The transport changed, the prompt-injection surface
 did not.
+
+## `tanstack-router-query` teaches `queryClient.query()`, which 5.101 lacks
+
+Since the October 2026 bump, the vendored `tanstack-router-query` skill (and
+the loader examples in `tanstack-router-core` / `tanstack-react-start`)
+replace `ensureQueryData` / `prefetchQuery` with
+`queryClient.query({ ...opts, staleTime: 'static' })`. That method first ships
+in `@tanstack/query-core` **5.102.0**; the lockfile resolves 5.101.0, so code
+copied from the skill fails `pnpm typecheck` with "Property 'query' does not
+exist".
+
+Nothing in `src/` calls either API today. Before writing the first loader
+that does, bump `@tanstack/react-query` to ≥ 5.102 (then follow the skill),
+or stay on `ensureQueryData` and say why in the PR. Either way the
+`CLAUDE.md` rule still holds: never `await` a fire-and-forget query in a
+loader.
