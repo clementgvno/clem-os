@@ -1218,10 +1218,12 @@ per family: `.agents/skills/<name>/`. Two consequences:
 - **Sibling links inside a family resolve, links climbing out of it don't.**
   A sub-skill vendored as a `reference` keeps its position relative to its
   parent, so `./middleware/SKILL.md` and `../server-functions/SKILL.md` work.
-  But upstream also links *across* packages
-  (`../../../../router-core/skills/router-core/auth-and-guards/SKILL.md`), and
-  that prefix doesn't exist locally — 17 such links currently dangle. We do
-  **not** rewrite them at vendor time: `computedHash` is computed on the fetched
+  Cross-package references used to be relative links
+  (`../../../../router-core/skills/router-core/auth-and-guards/SKILL.md`) that
+  dangled locally; since the November 2026 bump upstream writes them as plain
+  text (`@tanstack/router-core#router-core/auth-and-guards`). One relative link
+  still dangles: `tanstack-router-query` → `../../react-router/SKILL.md`. We do
+  **not** rewrite links at vendor time: `computedHash` is computed on the fetched
   bytes, so patching links on write would make the working tree permanently
   disagree with the hash, and every `--check` would look like drift. The mapping
   lives in `CLAUDE.md` § Skills instead.

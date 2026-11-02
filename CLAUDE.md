@@ -321,12 +321,14 @@ lives in descendant directories reached from there
 registers the 5 top-level skills, so a sub-skill is *read through its parent's
 table*, never picked from the skill list.
 
-Upstream links that climb out of a skill (`../../../<pkg>/skills/<skill>/…`)
-**dangle by design**: we vendor flat (`.agents/skills/<name>/`), upstream nests
-under `packages/<pkg>/skills/`. Translate with `<skill>[/<sub>]` →
-`tanstack-<skill>[/<sub>]` (so `start-client-core/skills/start-core/middleware`
+Upstream cites skills in other packages as `@tanstack/<pkg>#<skill>[/<sub>]`
+(plain text, not a link): we vendor flat (`.agents/skills/<name>/`), upstream
+nests under `packages/<pkg>/skills/`. Translate with `<skill>[/<sub>]` →
+`tanstack-<skill>[/<sub>]` (so `@tanstack/start-client-core#start-core/middleware`
 → `tanstack-start-core/middleware`); the one irregular case is
-`react-router/skills/compositions/router-query` → `tanstack-router-query`. See
+`@tanstack/react-router#compositions/router-query` → `tanstack-router-query`,
+whose own link `../../react-router/SKILL.md` dangles — read it as
+`tanstack-react-router`. See
 `KNOWN_ISSUES.md` § "Vendored skills: cross-family links".
 
 **shadcn/ui**: no agent skill yet. Conventions live in `components.json`
