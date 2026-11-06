@@ -107,6 +107,9 @@ export default defineSchema({
     deliveries: v.array(v.object({ liters: v.number(), price: v.number() })),
     fixStock: v.optional(v.number()),
     fixPmp: v.optional(v.number()),
+    // The missing-stock warning for this morning was dismissed: nobody will
+    // ever fill it in. Never read by the engine, changes no figure.
+    gapIgnored: v.optional(v.boolean()),
     updatedBy: v.id('users'),
     updatedAt: v.number(),
   }).index('by_org_and_product_and_date', ['orgId', 'product', 'date']),

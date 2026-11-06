@@ -74,6 +74,12 @@
     "stock": "Stock jauge",
     "sales": "Ventes {{day}}"
   },
+  "missing": {
+    "ignoreOne": "Ignorer ce manque",
+    "ignoreAll": "Tout ignorer",
+    "ignored_one": "Alerte masquée",
+    "ignored_other": "{{count}} alertes masquées"
+  },
   "missingBanner": "Stock manquant",
   "missingSalesBanner": "Ventes manquantes",
   "dayTotals": {

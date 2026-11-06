@@ -74,6 +74,12 @@
     "stock": "Gauge stock",
     "sales": "Sales {{day}}"
   },
+  "missing": {
+    "ignoreOne": "Ignore this gap",
+    "ignoreAll": "Ignore all",
+    "ignored_one": "Warning dismissed",
+    "ignored_other": "{{count}} warnings dismissed"
+  },
   "missingBanner": "Missing stock",
   "missingSalesBanner": "Missing sales",
   "dayTotals": {

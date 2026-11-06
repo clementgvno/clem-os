@@ -5,6 +5,10 @@
   "subtitle": "Les dernières améliorations de l'application.",
   "seeAll": "Voir toutes les nouveautés",
   "entries": {
+    "fuel-ignore-gaps": {
+      "title": "Carburant : masquer une alerte de stock manquant",
+      "body": "Les jours que personne ne remplira (des vacances, par exemple) peuvent être retirés du bandeau « Stock manquant », un par un ou tous d'un coup. Aucun chiffre ne change : ces jours restent simplement hors des totaux, et tout nouvel oubli s'affiche toujours."
+    },
     "fuel-deliveries-ahead": {
       "title": "Carburant : saisir une commande à l'avance",
       "body": "Dès la commande passée, saisissez la livraison au jour où elle arrive, jusqu'à une semaine à l'avance (demain, ou lundi depuis vendredi) : son litrage et son prix d'achat sont déjà connus. Elle ne compte que dans le PMP de ce jour-là, jamais dans celui d'aujourd'hui."

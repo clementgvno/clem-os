@@ -193,6 +193,7 @@ Prerequisite: the Items tool is enabled on Acme (`/app/admin`, cf. SA6).
 | F6 | Morning stock > yesterday's available (31 000)               | Field error "Available yesterday: … L", nothing saved            |
 | F7 | 5 decimals in a price, letters, "12,5" liters                | Field error, value kept, Escape restores the saved one            |
 | F8 | Skip a morning's stock, type the next one, open today        | Orange "Missing stock" banner links to the skipped day; the day before it shows sold "—"; the next day's sold and margin are back |
+| F8b | In the "Missing stock" banner, click ✕ on one chip, then "Ignore all"; reload; open the org in a second browser | Chip leaves the banner (toast with Undo brings it back); "Ignore all" hides the banner, including the "+N" overflow; still hidden after reload and for the other member; month figures unchanged; a new missed morning shows up again |
 | F9 | Change a past delivery price                                 | PMP and margins of every later day update (month view)            |
 | F10 | "Correct PMP" → new liters/PMP → OK                       | Tag "PMP corrected", later days carry the new PMP; clearing the stock field on a later day removes both |
 | F10b | Switch "Morning entry" to "Sales <yesterday>", type yesterday's volume 4 000 | Morning stock becomes read-only, recomputed (available − 4 000); yesterday's margin follows; the switch survives a reload |

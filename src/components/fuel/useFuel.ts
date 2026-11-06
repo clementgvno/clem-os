@@ -15,6 +15,8 @@ export type FuelData = {
   ledgers: FuelLedgers
   /** Who last saved a given day: key `${product}:${date}`. */
   authors: Map<string, string>
+  /** Mornings whose missing-stock warning was dismissed: key `${product}:${date}`. */
+  ignoredGaps: Set<string>
 }
 
 /** Every product's ledger up to `until` (at least), or undefined while loading. */
@@ -29,14 +31,16 @@ export function useFuelData(
       FUEL_PRODUCTS.map((p) => [p, []]),
     )
     const authors = new Map<string, string>()
+    const ignoredGaps = new Set<string>()
     for (const e of list) {
       entries.get(e.product)?.push(e)
       authors.set(`${e.product}:${e.date}`, e.updatedByName)
+      if (e.gapIgnored) ignoredGaps.add(`${e.product}:${e.date}`)
     }
     const ledgers: FuelLedgers = new Map(
       FUEL_PRODUCTS.map((p) => [p, computeLedger(entries.get(p) ?? [], until)]),
     )
-    return { ledgers, authors }
+    return { ledgers, authors, ignoredGaps }
   }, [list, until])
 }
 
@@ -48,6 +52,7 @@ export function useFuelActions(orgId: Id<'organizations'>) {
   const removeDelivery = useConvexMutation(api.fuel.removeDelivery)
   const setStock = useConvexMutation(api.fuel.setStock)
   const setSold = useConvexMutation(api.fuel.setSold)
+  const setGapsIgnored = useConvexMutation(api.fuel.setGapsIgnored)
 
   const run = useCallback(
     async (promise: Promise<unknown>) => {
@@ -94,8 +99,22 @@ export function useFuelActions(orgId: Id<'organizations'>) {
       /** Volume sold that day, read on the pump counter. */
       setSold: (product: FuelProduct, date: string, sold: number | null) =>
         run(setSold({ ...day(product, date), sold })),
+      /** Dismisses (or brings back) missing-stock warnings. */
+      setGapsIgnored: (
+        gaps: Array<{ product: FuelProduct; date: string }>,
+        ignored: boolean,
+      ) => run(setGapsIgnored({ orgId, gaps, ignored })),
     }
-  }, [orgId, run, setPrice, addDelivery, removeDelivery, setStock, setSold])
+  }, [
+    orgId,
+    run,
+    setPrice,
+    addDelivery,
+    removeDelivery,
+    setStock,
+    setSold,
+    setGapsIgnored,
+  ])
 }
 
 export type FuelActions = ReturnType<typeof useFuelActions>
