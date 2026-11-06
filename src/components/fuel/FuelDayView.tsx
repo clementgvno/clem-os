@@ -90,6 +90,9 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
     }
   })
   const started = products.some((p) => p.ledger.length > 0)
+  // A day ahead only takes deliveries already ordered: nobody has read its
+  // gauge, counter or price yet.
+  const ahead = date > today
 
   // Past mornings whose stock is still unknown (only on today's screen:
   // today's is the field right there). Either fact fills the gap: that
@@ -122,6 +125,9 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
     <div className="space-y-3">
       {!started && (
         <p className="text-muted-foreground text-sm">{t('start.hint')}</p>
+      )}
+      {started && ahead && (
+        <p className="text-muted-foreground text-sm">{t('ahead.hint')}</p>
       )}
       {missingList.length > 0 && (
         <div className="bg-warning-muted text-warning flex flex-wrap items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium">
@@ -192,6 +198,7 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
               yRow={p.yRow}
               date={date}
               yesterday={yesterday}
+              ahead={ahead}
               mode={mode}
               actions={actions}
             />
@@ -239,6 +246,7 @@ function DayRow({
   yRow,
   date,
   yesterday,
+  ahead,
   mode,
   actions,
 }: {
@@ -248,6 +256,7 @@ function DayRow({
   yRow: FuelRow | null
   date: string
   yesterday: string
+  ahead: boolean
   mode: EntryMode
   actions: FuelActions
 }) {
@@ -264,7 +273,9 @@ function DayRow({
   // correct it; otherwise it carries over.
   const isStart = ledger[0]?.date === date
   let stockCell: ReactNode
-  if (!row || fixing) {
+  if (ahead && !row) {
+    stockCell = null
+  } else if (!row || fixing) {
     stockCell = (
       <div>
         {!row && (
@@ -292,7 +303,7 @@ function DayRow({
   } else {
     stockCell = (
       <>
-        {mode === 'sales' ? (
+        {mode === 'sales' || ahead ? (
           <div
             className={cn(
               BIG,
@@ -348,13 +359,15 @@ function DayRow({
               {t('stock.pmpFixed')}
             </span>
           )}
-          <button
-            type="button"
-            className={LINK}
-            onClick={() => setFixing(true)}
-          >
-            {t('stock.fixPmp')}
-          </button>
+          {!ahead && (
+            <button
+              type="button"
+              className={LINK}
+              onClick={() => setFixing(true)}
+            >
+              {t('stock.fixPmp')}
+            </button>
+          )}
         </div>
       </>
     )
@@ -453,7 +466,7 @@ function DayRow({
         <div className={LABEL}>
           {t('columns.soldOn', { day: fmt.shortDay(yesterday) })}
         </div>
-        {mode === 'sales' && yRow ? (
+        {mode === 'sales' && yRow && !ahead ? (
           <NumberField
             id={id('sold')}
             label={`${name} · ${t('columns.soldOn', { day: fmt.shortDay(yesterday) })}`}
@@ -549,7 +562,18 @@ function DayRow({
 
       <div className={cn('[grid-area:price]', RIGHT)}>
         <div className={LABEL}>{t('columns.price')}</div>
-        {row && (
+        {row && ahead && (
+          <div
+            className={cn(
+              BIG,
+              '@min-[60rem]:justify-end',
+              row.price === null && 'text-muted-foreground',
+            )}
+          >
+            {row.price !== null ? fmt.pump(row.price) : '—'}
+          </div>
+        )}
+        {row && !ahead && (
           <>
             <NumberField
               id={id('price')}
