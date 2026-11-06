@@ -150,6 +150,33 @@ describe('ledger', () => {
     assert.equal(rows[2].margin, 375)
   })
 
+  test('a delivery ordered ahead leaves the days before it alone', () => {
+    // Typed on the 1st for the 4th (its liters and price are known): the 1st
+    // keeps its own PMP, and the 4th weights the delivery once the stock that
+    // morning is known.
+    const ordered: Array<FuelEntry> = [
+      { ...base[0], sold: undefined },
+      { date: '2026-09-04', deliveries: [{ liters: 20_000, price: 15_000 }] },
+    ]
+    const rows = computeLedger(ordered, '2026-09-01')
+    assert.equal(rows.length, 4) // up to the delivery, not just `until`
+    assert.equal(rows[0].pmp, 14_200)
+    assert.equal(rows[3].deliveredLiters, 20_000)
+    assert.equal(rows[3].pmp, null)
+
+    const read = computeLedger(
+      [
+        ordered[0],
+        { date: '2026-09-02', fixStock: 25_000, deliveries: [] },
+        { date: '2026-09-03', fixStock: 20_000, deliveries: [] },
+        { ...ordered[1], fixStock: 10_000 },
+      ],
+      '2026-09-04',
+    )
+    // (10 000 × 1.4200 + 20 000 × 1.5000) / 30 000 = 1.4733…
+    assert.equal(read[3].pmp, 14_733)
+  })
+
   test('a stock correction restarts the chain', () => {
     const rows = computeLedger(
       [

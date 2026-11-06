@@ -1008,6 +1008,13 @@ exception to "never edit `convex/_generated/*`" — say so in the PR.
   (`stock_exceeds_available`): it means a forgotten delivery. If a later edit
   makes a derived volume negative anyway, the row is flagged `negativeSold`
   and kept out of the margin totals.
+- **Days ahead take deliveries only** (up to `FUEL_LIMITS.maxDaysAhead`):
+  an order's liters and price are known before it arrives, so it is typed
+  ahead, dated on its delivery day so it never weighs on today's PMP. Stock,
+  volume sold and pump price stay limited to tomorrow (server UTC slack) and
+  are read-only ahead in the UI. A day ahead with a delivery extends the
+  ledger past today: its PMP stays "—" until that morning's stock is known —
+  expected, a delivery can't be weighted against an unknown stock.
 - **Tests live in `tests/`, not next to the code.** `convex/tsconfig.json`
   has no `allowImportingTsExtensions`, which `node --test` needs; the Convex
   bundler would skip a `fuel.test.ts` (several dots) anyway.

@@ -29,6 +29,9 @@
     "price": "Prix pompe",
     "margin": "Marge"
   },
+  "ahead": {
+    "hint": "Jour à venir : seules les livraisons déjà commandées se saisissent. Le stock, les ventes et le prix pompe se saisissent le jour même."
+  },
   "start": {
     "hint": "Pour commencer, saisissez le stock de chaque produit ce matin et son prix moyen d'achat HT.",
     "label": "Stock de départ"

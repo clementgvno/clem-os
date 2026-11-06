@@ -29,6 +29,9 @@
     "price": "Pump price",
     "margin": "Margin"
   },
+  "ahead": {
+    "hint": "Day ahead: only deliveries already ordered can be entered. Stock, sales and pump price are entered on the day."
+  },
   "start": {
     "hint": "To start, enter each product's stock this morning and its average purchase price excl. VAT.",
     "label": "Starting stock"

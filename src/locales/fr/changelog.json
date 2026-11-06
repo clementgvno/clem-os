@@ -5,6 +5,10 @@
   "subtitle": "Les dernières améliorations de l'application.",
   "seeAll": "Voir toutes les nouveautés",
   "entries": {
+    "fuel-deliveries-ahead": {
+      "title": "Carburant : saisir une commande à l'avance",
+      "body": "Dès la commande passée, saisissez la livraison au jour où elle arrive, jusqu'à une semaine à l'avance (demain, ou lundi depuis vendredi) : son litrage et son prix d'achat sont déjà connus. Elle ne compte que dans le PMP de ce jour-là, jamais dans celui d'aujourd'hui."
+    },
     "framework-security-update": {
       "title": "Mise à jour de sécurité",
       "body": "Nous avons mis à jour le socle technique de l'application pour intégrer un correctif de sécurité publié par son éditeur. Rien à faire de votre côté."

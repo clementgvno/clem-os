@@ -44,9 +44,13 @@ function toEntry(doc: Doc<'fuelDays'>): FuelEntry {
   }
 }
 
-function checkDate(date: string) {
-  const tomorrow = addDays(new Date().toISOString().slice(0, 10), 1)
-  if (!isIsoDate(date) || date > tomorrow) throw new ConvexError('invalid_date')
+/**
+ * `daysAhead` days after today at most. One extra day of slack: the server's
+ * UTC date can lag the station's local one.
+ */
+function checkDate(date: string, daysAhead = 0) {
+  const max = addDays(new Date().toISOString().slice(0, 10), daysAhead + 1)
+  if (!isIsoDate(date) || date > max) throw new ConvexError('invalid_date')
 }
 
 function checkInt(value: number, min: number, max: number) {
@@ -151,7 +155,8 @@ export const addDelivery = mutation({
   handler: async (ctx, { liters, price, ...key }) => {
     const { user } = await requireOrgMember(ctx, key.orgId)
     await requireOrgModule(ctx, key.orgId, 'fuel')
-    checkDate(key.date)
+    // An order whose liters and price are already known can be typed ahead.
+    checkDate(key.date, FUEL_LIMITS.maxDaysAhead)
     checkInt(liters, 1, FUEL_LIMITS.maxLiters)
     checkInt(price, FUEL_LIMITS.minUnitPrice, FUEL_LIMITS.maxUnitPrice)
     const history = await loadHistory(ctx, key)

@@ -38,6 +38,8 @@ export const FUEL_LIMITS = {
   maxUnitPrice: 50_000, // 5.0000 €/L excl. VAT
   minPumpPrice: 100, // 0.100 €/L incl. VAT
   maxPumpPrice: 5_000, // 5.000 €/L incl. VAT
+  /** A delivery already ordered can be dated this many days ahead (Friday → Monday, long weekends). */
+  maxDaysAhead: 7,
 } as const
 
 const VAT_PERCENT = 20

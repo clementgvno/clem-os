@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { z } from 'zod'
 
 import { api } from '../../../../convex/_generated/api'
-import { addDays, isIsoDate } from '../../../../convex/lib/fuel'
+import { FUEL_LIMITS, addDays, isIsoDate } from '../../../../convex/lib/fuel'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { getI18n } from '~/lib/i18n'
 import { getLocale } from '~/lib/locale'
@@ -69,10 +69,14 @@ function FuelScreen({ orgId }: { orgId: Id<'organizations'> }) {
   // The station's calendar day, from the browser clock (not the server's UTC).
   const [today] = useState(localToday)
 
+  // Days ahead only hold deliveries already ordered.
+  const lastDay = addDays(today, FUEL_LIMITS.maxDaysAhead)
+
   const view = search.view ?? 'day'
-  const date = search.date && search.date <= today ? search.date : today
+  const date = search.date && search.date <= lastDay ? search.date : today
   const month = date.slice(0, 7)
-  const data = useFuelData(orgId, today)
+  // Up to the day on screen, so a day ahead with nothing typed is still a row.
+  const data = useFuelData(orgId, date > today ? date : today)
   const actions = useFuelActions(orgId)
 
   const go = (next: { view?: 'day' | 'month'; date?: string }) =>
@@ -88,6 +92,7 @@ function FuelScreen({ orgId }: { orgId: Id<'organizations'> }) {
 
   const isCurrent =
     view === 'day' ? date === today : month === today.slice(0, 7)
+  const isLast = view === 'day' ? date >= lastDay : month >= today.slice(0, 7)
   const shift = (n: -1 | 1) => {
     if (view === 'day') return go({ date: addDays(date, n) })
     const [y, m] = month.split('-').map(Number)
@@ -128,7 +133,7 @@ function FuelScreen({ orgId }: { orgId: Id<'organizations'> }) {
             variant="outline"
             size="icon"
             aria-label={t('nav.next')}
-            disabled={isCurrent}
+            disabled={isLast}
             onClick={() => shift(1)}
           >
             <ChevronRight />

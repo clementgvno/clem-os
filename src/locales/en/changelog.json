@@ -5,6 +5,10 @@
   "subtitle": "The latest improvements to the app.",
   "seeAll": "See all updates",
   "entries": {
+    "fuel-deliveries-ahead": {
+      "title": "Fuel: enter an order ahead",
+      "body": "As soon as an order is placed, enter its delivery on the day it arrives, up to a week ahead (tomorrow, or Monday from Friday): its liters and purchase price are already known. It only counts in that day's average cost, never today's."
+    },
     "framework-security-update": {
       "title": "Security update",
       "body": "We updated the app's underlying framework to pick up a security fix published by its maintainers. Nothing to do on your side."
