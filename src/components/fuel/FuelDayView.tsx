@@ -101,7 +101,11 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
   if (date === today) {
     for (const { product, ledger } of products) {
       for (const r of ledger) {
-        if (r.date < today && r.openStock === null) {
+        if (
+          r.date < today &&
+          r.openStock === null &&
+          !data.ignoredGaps.has(`${product}:${r.date}`)
+        ) {
           missing.set(r.date, [...(missing.get(r.date) ?? []), product])
         }
       }
@@ -110,6 +114,19 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
   const missingList = [...missing.entries()].sort(([a], [b]) =>
     a < b ? -1 : 1,
   )
+  // Dismissing changes no figure: it only says nobody will fill these in.
+  const ignore = (gaps: Array<{ product: FuelProduct; date: string }>) =>
+    void actions.setGapsIgnored(gaps, true).then(
+      () =>
+        toast(t('missing.ignored', { count: gaps.length }), {
+          action: {
+            label: t('actions.undo'),
+            onClick: () =>
+              void actions.setGapsIgnored(gaps, false).catch(() => {}),
+          },
+        }),
+      () => {},
+    )
 
   let ySold = 0
   let yMargin = 0
@@ -135,18 +152,46 @@ export function FuelDayView({ date, today, data, actions, onGoto }: Props) {
             {t(mode === 'sales' ? 'missingSalesBanner' : 'missingBanner')}
           </span>
           {missingList.slice(0, 6).map(([d, ps]) => (
-            <button
+            <span
               key={d}
-              type="button"
-              onClick={() => onGoto(d)}
-              className="bg-background text-foreground hover:bg-accent rounded-full px-2.5 py-0.5 text-xs"
+              className="bg-background text-foreground inline-flex items-center rounded-full text-xs"
             >
-              {/* In sales mode the gap is the day before's volume, typed on this morning's screen. */}
-              {fmt.shortDay(mode === 'sales' ? addDays(d, -1) : d)} ·{' '}
-              {ps.map((p) => t(`products.${p}`)).join(', ')}
-            </button>
+              <button
+                type="button"
+                onClick={() => onGoto(d)}
+                className="hover:bg-accent rounded-l-full py-0.5 pr-1 pl-2.5"
+              >
+                {/* In sales mode the gap is the day before's volume, typed on this morning's screen. */}
+                {fmt.shortDay(mode === 'sales' ? addDays(d, -1) : d)} ·{' '}
+                {ps.map((p) => t(`products.${p}`)).join(', ')}
+              </button>
+              <button
+                type="button"
+                aria-label={t('missing.ignoreOne')}
+                title={t('missing.ignoreOne')}
+                onClick={() =>
+                  ignore(ps.map((product) => ({ product, date: d })))
+                }
+                className="text-muted-foreground hover:bg-accent hover:text-foreground mr-0.5 grid size-5 place-items-center rounded-full"
+              >
+                <X className="size-3" />
+              </button>
+            </span>
           ))}
           {missingList.length > 6 && <span>+{missingList.length - 6}</span>}
+          <button
+            type="button"
+            onClick={() =>
+              ignore(
+                missingList.flatMap(([d, ps]) =>
+                  ps.map((product) => ({ product, date: d })),
+                ),
+              )
+            }
+            className="ml-auto text-xs underline underline-offset-2 hover:no-underline"
+          >
+            {t('missing.ignoreAll')}
+          </button>
         </div>
       )}
 

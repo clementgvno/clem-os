@@ -12,6 +12,7 @@ import type { FuelDelivery, FuelEntry, FuelProduct } from './lib/fuel'
 // same engine the mutations use for their checks (`convex/lib/fuel.ts`).
 
 const MAX_DELIVERIES_PER_DAY = 20
+const MAX_GAPS_PER_CALL = 400
 
 type DayKey = {
   orgId: Id<'organizations'>
@@ -25,6 +26,7 @@ type DayFields = {
   deliveries: Array<FuelDelivery>
   fixStock?: number
   fixPmp?: number
+  gapIgnored?: boolean
 }
 
 const dayArgs = {
@@ -92,12 +94,14 @@ async function writeDay(
     deliveries: [...(existing?.deliveries ?? [])],
     fixStock: existing?.fixStock,
     fixPmp: existing?.fixPmp,
+    gapIgnored: existing?.gapIgnored,
   })
   const empty =
     next.sold === undefined &&
     next.price === undefined &&
     next.deliveries.length === 0 &&
-    next.fixStock === undefined
+    next.fixStock === undefined &&
+    next.gapIgnored === undefined
   if (empty) {
     if (existing) await ctx.db.delete('fuelDays', existing._id)
     return
@@ -124,6 +128,7 @@ export const list = query({
     return docs.map((d) => ({
       ...toEntry(d),
       product: d.product,
+      gapIgnored: d.gapIgnored ?? false,
       updatedByName: names.get(d.updatedBy) ?? '',
       updatedAt: d.updatedAt,
     }))
@@ -298,6 +303,47 @@ export const setSold = mutation({
       ...day,
       sold: sold ?? undefined,
     }))
+    return null
+  },
+})
+
+/**
+ * Dismisses (or brings back) the missing-stock warning of past mornings that
+ * will never be filled in, e.g. after a holiday nobody logged. Changes no
+ * figure: those days keep an unknown volume and stay out of the totals.
+ */
+export const setGapsIgnored = mutation({
+  args: {
+    orgId: v.id('organizations'),
+    gaps: v.array(
+      v.object({ product: fuelProductValidator, date: v.string() }),
+    ),
+    ignored: v.boolean(),
+  },
+  handler: async (ctx, { orgId, gaps, ignored }) => {
+    const { user } = await requireOrgMember(ctx, orgId)
+    await requireOrgModule(ctx, orgId, 'fuel')
+    if (gaps.length > MAX_GAPS_PER_CALL) throw new ConvexError('invalid_value')
+    const byProduct = new Map<FuelProduct, Set<string>>()
+    for (const { product, date } of gaps) {
+      checkDate(date)
+      byProduct.set(product, (byProduct.get(product) ?? new Set()).add(date))
+    }
+    for (const [product, dates] of byProduct) {
+      const history = await loadHistory(ctx, { orgId, product, date: '' })
+      for (const date of dates) {
+        await writeDay(
+          ctx,
+          { orgId, product, date },
+          history,
+          user._id,
+          (day) => ({
+            ...day,
+            gapIgnored: ignored || undefined,
+          }),
+        )
+      }
+    }
     return null
   },
 })

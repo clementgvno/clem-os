@@ -5,6 +5,10 @@
   "subtitle": "The latest improvements to the app.",
   "seeAll": "See all updates",
   "entries": {
+    "fuel-ignore-gaps": {
+      "title": "Fuel: dismiss a missing-stock warning",
+      "body": "Days nobody will ever fill in (a holiday, say) can be dismissed from the \"Missing stock\" banner, one by one or all at once. Nothing is recalculated: those days simply stay out of the totals, and any new gap still shows up."
+    },
     "fuel-deliveries-ahead": {
       "title": "Fuel: enter an order ahead",
       "body": "As soon as an order is placed, enter its delivery on the day it arrives, up to a week ahead (tomorrow, or Monday from Friday): its liters and purchase price are already known. It only counts in that day's average cost, never today's."

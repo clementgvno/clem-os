@@ -1008,6 +1008,12 @@ exception to "never edit `convex/_generated/*`" — say so in the PR.
   (`stock_exceeds_available`): it means a forgotten delivery. If a later edit
   makes a derived volume negative anyway, the row is flagged `negativeSold`
   and kept out of the margin totals.
+- **A dismissed gap is stored, not hidden per browser** (`fuelDays.gapIgnored`):
+  the banner is shared by every member, so the dismissal must be too. It is
+  the one field the engine never reads — it changes no figure, those days
+  keep an unknown volume and stay out of the totals. It sticks to that
+  (product, morning) for good: if a later edit reopens a gap on the very
+  same morning, it stays hidden (the month view still shows "—").
 - **Days ahead take deliveries only** (up to `FUEL_LIMITS.maxDaysAhead`):
   an order's liters and price are known before it arrives, so it is typed
   ahead, dated on its delivery day so it never weighs on today's PMP. Stock,
